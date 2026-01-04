@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from "framer-motion";
 import YearDropdown from "@/components/examOption/YearDropdown";
 import SubjectGrid from "@/components/examOption/SubjectGrid";
-import PreviewChips from "@/components/examOption/previewChips";
+import PreviewChips from "@/components/examOption/PreviewChips";
 import ActionRow from "@/components/examOption/ActionRow";
 import ExamTypeChips from "@/components/examOption/ExamTypeChips";
 import ExamMode from "@/components/examOption/ExamMode";
