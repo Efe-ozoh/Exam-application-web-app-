@@ -10,8 +10,9 @@ import ActionRow from "@/components/examOption/ActionRow";
 import ExamTypeChips from "@/components/examOption/ExamTypeChips";
 import ExamMode from "@/components/examOption/ExamMode";
 
-const ExamOptions = ({
-  subjects = [
+const ExamOptions = () => {
+
+  const subjects = [
     "English",
     "Mathematics",
     "Physics",
@@ -27,8 +28,7 @@ const ExamOptions = ({
     "Commerce",
     "Further-Mathematics",
     "Computer-Science",
-  ],
-}) => {
+  ]
 
   const router = useRouter();
 
