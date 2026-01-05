@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import ArrowBackIos from "@mui/icons-material/ArrowBackIos";
-import ArrowForwardIos from "@mui/icons-material/ArrowForwardIos";
-import ExamCard from "./card";
+import React, { useEffect, useRef, useState } from 'react';
+import ArrowBackIos from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIos from '@mui/icons-material/ArrowForwardIos';
+import ExamCard from './card';
+
 
 type Exam = {
   title: string;
@@ -11,165 +12,177 @@ type Exam = {
   image: string;
 };
 
-// Default exam data
 const exams: Exam[] = [
   {
-    title: "JAMB CBT",
-    description: "Practice for your exams with real questions and instant feedback.",
-    image: "/assets/jamb_logo.png",
+    title: 'JAMB CBT',
+    description: 'Practice for your exams with real questions and instant feedback.',
+    image: '/assets/jamb_logo.png',
   },
   {
-    title: "WAEC",
-    description: "Ace your WAEC exams with comprehensive practice tests and solutions.",
-    image: "/assets/waec_logo.png",
+    title: 'WAEC',
+    description: 'Ace your WAEC exams with our comprehensive practice tests and detailed solutions.',
+    image: '/assets/waec_logo.png',
   },
   {
-    title: "NECO",
-    description: "Prepare for your NECO exams with our question bank and analytics.",
-    image: "/assets/neco_logo.png",
+    title: 'NECO',
+    description: 'Prepare for your NECO exams with our extensive question bank and performance analytics.',
+    image: '/assets/neco_logo.png',
   },
   {
-    title: "Post-UTME",
-    description: "Get ready for your Post-UTME exams with tailored questions and tips.",
-    image: "/assets/post_utme.png",
+    title: 'Post-UTME',
+    description: 'Get ready for your Post-UTME exams with our tailored practice questions and expert tips.',
+    image: '/assets/post_utme.png',
   },
 ];
 
 const CardSlider: React.FC = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [visible, setVisible] = useState(1); // items visible on screen
-  const [itemWidth, setItemWidth] = useState(0);
-  const [hovered, setHovered] = useState(false);
+  const [visible, setVisible] = useState<number>(3);
+  const [itemWidth, setItemWidth] = useState<number>(0);
 
-  // Tripled items for infinite loop
-  const items = React.useMemo(
-    () => [...(exams || []), ...(exams || []), ...(exams || [])],
-    []
-  );
-
-  // Responsive visible count
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const updateVisible = () => {
+    const update = () => {
       const w = window.innerWidth;
-      if (w >= 1280) setVisible(3);
+      if (w >= 1024) setVisible(2);
       else if (w >= 768) setVisible(2);
       else setVisible(1);
     };
-    updateVisible();
-
-    window.addEventListener("resize", updateVisible);
-    return () => window.removeEventListener("resize", updateVisible);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
   }, []);
 
-  // Measure single item width
+  // measure item width (including gap) whenever visible changes or on mount
   useEffect(() => {
-    if (typeof window === "undefined") return;
     const el = containerRef.current;
     if (!el) return;
+    const gap = 12;
 
     const measure = () => {
-      const first = el.querySelector<HTMLDivElement>(".slider-item");
-      if (first) {
-        const width = first.getBoundingClientRect().width;
-        setItemWidth(width);
+      // pick the first snap-start child (one card)
+      const child = el.querySelector<HTMLDivElement>('.snap-start');
+      if (child) {
+        const width = child.getBoundingClientRect().width;
+        setItemWidth(width + gap);
       }
     };
 
+    // measure initially
     measure();
 
-    const ro = new ResizeObserver(measure);
+    // observe size changes (images loading, fonts, etc.)
+    const ro = new ResizeObserver(() => measure());
+    // observe container and its children
     ro.observe(el);
     Array.from(el.children).forEach((c) => ro.observe(c as Element));
 
     return () => ro.disconnect();
   }, [visible]);
 
-  // Scroll function
   const scroll = (dir: number) => {
     const el = containerRef.current;
-    if (!el || itemWidth === 0) return;
+    if (!el) return;
+    if (itemWidth === 0) return;
+    const single = itemWidth; // includes gap
+    const originalCount = exams.length;
+    const offset = single * visible * dir;
 
-    const offset = itemWidth * visible * dir;
-    el.scrollBy({ left: offset, behavior: "smooth" });
+    el.scrollBy({ left: offset, behavior: 'smooth' });
 
-    // wrap-around after animation
+    // after scroll completes, check bounds and wrap if needed
     setTimeout(() => {
-      if (!el) return;
-      const originalCount = exams.length;
       const maxScroll = el.scrollWidth - el.clientWidth;
-
-      if (el.scrollLeft <= 0) {
-        el.scrollLeft += originalCount * itemWidth;
+      // if scrolled past the end copy, jump back by originalCount * single
+      if (el.scrollLeft >= (originalCount * 2) * single - single) {
+        el.scrollLeft = el.scrollLeft - originalCount * single;
       }
-      if (el.scrollLeft >= maxScroll - itemWidth) {
-        el.scrollLeft -= originalCount * itemWidth;
+      // if scrolled before the first copy, jump forward
+      if (el.scrollLeft <= (originalCount - 1) * single - single) {
+        el.scrollLeft = el.scrollLeft + originalCount * single;
       }
-    }, 400);
+    }, 700);
   };
 
-  // Autoplay
+  // autoplay
+  const autoplayRef = React.useRef<number | null>(null);
+  const [hovered, setHovered] = useState(false);
+
+  // continuous autoplay using tripled items technique
+  const items = React.useMemo(() => [...exams, ...exams, ...exams], []);
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el || itemWidth === 0) return;
 
+    const gap = 16;
+    const single = itemWidth; // includes gap
     const originalCount = exams.length;
-    el.scrollLeft = originalCount * itemWidth; // start at middle copy
+    const startIndex = originalCount; // start in middle copy
 
-    const interval = setInterval(() => {
-      if (!hovered) scroll(1);
-    }, 5000);
+    // set initial scroll to middle
+    el.scrollLeft = startIndex * single;
 
-    return () => clearInterval(interval);
+    if (autoplayRef.current) window.clearInterval(autoplayRef.current);
+    if (!hovered) {
+      autoplayRef.current = window.setInterval(() => {
+        // scroll forward by visible items
+        el.scrollBy({ left: single * visible, behavior: 'smooth' });
+
+        // after animation, if we're near the end, jump back to middle equivalent
+        setTimeout(() => {
+          const maxScroll = el.scrollWidth - el.clientWidth;
+          if (el.scrollLeft >= (items.length - originalCount - visible) * single) {
+            // jump back by originalCount * single
+            el.scrollLeft = el.scrollLeft - originalCount * single;
+          }
+        }, 10000);
+      }, 7000);
+    }
+
+    return () => {
+      if (autoplayRef.current) window.clearInterval(autoplayRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemWidth, visible, hovered]);
 
   return (
-    <div className="relative w-full overflow-hidden mt-10">
-      {/* Previous button */}
+  <div className="relative w-full overflow-hidden mb-4 mt-10 pb-20">
       <button
         aria-label="Previous"
         onClick={() => scroll(-1)}
-        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full w-10 h-10 flex items-center justify-center shadow"
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full w-8 h-8 flex items-center justify-center"
       >
-        <ArrowBackIos />
+       <ArrowBackIos />
       </button>
 
-      {/* Cards container */}
       <div
         ref={containerRef}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar"
       >
-        {(items || []).map((exam, idx) => {
-          if (!exam || !exam.title) return null;
-          return (
-            <div
-              key={`${idx}-${exam.title}`}
-              className="snap-start slider-item flex-shrink-0 px-2"
-              style={{
-                flex: `0 0 ${100 / visible}%`,
-                maxWidth: `${100 / visible}%`,
-              }}
-            >
-              <ExamCard
-                title={exam.title || "Untitled"}
-                description={exam.description || ""}
-                image={exam.image || "/assets/default.png"}
-              />
-            </div>
-          );
-        })}
+        {items.map((exam, idx) => (
+          <div
+            key={`${idx}-${exam.title}`}
+            className="snap-start #slider"
+            style={{
+              flex: `0 0 ${100 / visible}%`,
+              maxWidth: `${100 / visible}%`,
+            }}
+          >
+          
+            <ExamCard title={exam.title} description={exam.description} image={exam.image} />
+            
+          </div>
+        ))}
       </div>
 
-      {/* Next button */}
       <button
         aria-label="Next"
         onClick={() => scroll(1)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full w-10 h-10 flex items-center justify-center shadow"
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full w-10 h-10 flex items-center justify-center"
       >
-        <ArrowForwardIos />
+       <ArrowForwardIos />
       </button>
     </div>
   );
