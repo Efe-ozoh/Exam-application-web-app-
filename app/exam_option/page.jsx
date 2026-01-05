@@ -97,7 +97,6 @@ const ExamOptions = () => {
       </header>
 
       <div className="space-y-4">
-        <ExamMode value={examMode} onChange={(val) => { setExamMode(val); setSelected([]); }}/>
         <ExamTypeChips value={examType} onChange={(val) => { setExamType(val); setSelected([]); }} />
         <YearDropdown value={year} onChange={setYear} />
         <SubjectGrid subjects={subjects} selectedSubjects={selected} maxAllowed={maxAllowed} onToggle={toggleSubject} />
