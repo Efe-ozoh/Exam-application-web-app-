@@ -15,7 +15,7 @@ type Props = {
 export default function ExamCard({ title, description, image }: Props) {
   return (
     
-  <Card sx={{ maxWidth: 240, width: '100%', mx: 'auto', mt: '15px' }}>
+  <Card sx={{ maxWidth: 240, width: '100%', mx: 'auto', my: '15px', }}>
     <Link href="/exam_option">
       <CardActionArea>
         <CardMedia
