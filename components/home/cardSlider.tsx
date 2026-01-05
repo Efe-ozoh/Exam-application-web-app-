@@ -146,7 +146,7 @@ const CardSlider: React.FC = () => {
   }, [itemWidth, visible, hovered]);
 
   return (
-  <div className="relative w-full overflow-hidden mt-10 pb-20 mb-10">
+  <div className="relative w-full overflow-hidden mb-4 mt-10 pb-20">
       <button
         aria-label="Previous"
         onClick={() => scroll(-1)}
