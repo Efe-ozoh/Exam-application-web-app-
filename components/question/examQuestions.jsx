@@ -11,12 +11,14 @@ const ExamQuestion =  ({currentQuestion, index, total, selectedAnswer, handleSel
       </div>
 
       <div className="text-lg lg:text-lg mb-6">
-      {currentQuestion.question.split("\n\n").map((para, index) => (
-      <p key={index} className="mb-4 leading-relaxed">
-       {para}
-     </p> 
-      )
-      )}
+      {currentQuestion?.question
+  ?.split("\n\n")
+  .map((para) => para.trim())
+  .filter(Boolean) // remove empty strings
+  .map((para, idx) => (
+    <p key={idx} className="mb-4 leading-relaxed">{para}</p>
+  ))}
+
 
       </div>
 

@@ -7,9 +7,9 @@ import CardActionArea from "@mui/material/CardActionArea";
 import Link from "next/link";
 
 type Props = {
-  title: string;
-  description: string;
-  image: string;
+  title?: string;
+  description?: string;
+  image?: string;
 };
 
 export default function ExamCard({ title, description, image }: Props) {
@@ -24,12 +24,12 @@ export default function ExamCard({ title, description, image }: Props) {
         boxShadow: 3,
       }}
     >
-      <Link href="/exam_option" passHref legacyBehavior>
-        <CardActionArea>
+      <Link href="/exam_option" passHref>
+        <CardActionArea component="a">
           <CardMedia
             component="img"
-            image={image}
-            alt={title}
+            image={image || "/assets/default.png"}
+            alt={title || "Untitled Exam"}
             sx={{
               width: "100%",
               height: 150,
@@ -44,7 +44,7 @@ export default function ExamCard({ title, description, image }: Props) {
               align="center"
               fontWeight="bold"
             >
-              {title}
+              {title || "Untitled Exam"}
             </Typography>
             <Typography
               variant="body2"
@@ -52,7 +52,7 @@ export default function ExamCard({ title, description, image }: Props) {
               color="text.secondary"
               align="center"
             >
-              {description}
+              {description || "No description available."}
             </Typography>
           </CardContent>
         </CardActionArea>

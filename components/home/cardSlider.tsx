@@ -11,6 +11,7 @@ type Exam = {
   image: string;
 };
 
+// Default exam data
 const exams: Exam[] = [
   {
     title: "JAMB CBT",
@@ -41,10 +42,15 @@ const CardSlider: React.FC = () => {
   const [hovered, setHovered] = useState(false);
 
   // Tripled items for infinite loop
-  const items = React.useMemo(() => [...exams, ...exams, ...exams], []);
+  const items = React.useMemo(
+    () => [...(exams || []), ...(exams || []), ...(exams || [])],
+    []
+  );
 
-  // responsive visible count
+  // Responsive visible count
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const updateVisible = () => {
       const w = window.innerWidth;
       if (w >= 1280) setVisible(3);
@@ -52,12 +58,14 @@ const CardSlider: React.FC = () => {
       else setVisible(1);
     };
     updateVisible();
+
     window.addEventListener("resize", updateVisible);
     return () => window.removeEventListener("resize", updateVisible);
   }, []);
 
-  // measure single item width
+  // Measure single item width
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const el = containerRef.current;
     if (!el) return;
 
@@ -78,7 +86,7 @@ const CardSlider: React.FC = () => {
     return () => ro.disconnect();
   }, [visible]);
 
-  // scroll by direction (-1 left, 1 right)
+  // Scroll function
   const scroll = (dir: number) => {
     const el = containerRef.current;
     if (!el || itemWidth === 0) return;
@@ -86,21 +94,22 @@ const CardSlider: React.FC = () => {
     const offset = itemWidth * visible * dir;
     el.scrollBy({ left: offset, behavior: "smooth" });
 
-    // wrap-around
+    // wrap-around after animation
     setTimeout(() => {
       if (!el) return;
       const originalCount = exams.length;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+
       if (el.scrollLeft <= 0) {
         el.scrollLeft += originalCount * itemWidth;
       }
-      const maxScroll = el.scrollWidth - el.clientWidth;
       if (el.scrollLeft >= maxScroll - itemWidth) {
         el.scrollLeft -= originalCount * itemWidth;
       }
     }, 400);
   };
 
-  // autoplay
+  // Autoplay
   useEffect(() => {
     const el = containerRef.current;
     if (!el || itemWidth === 0) return;
@@ -133,15 +142,18 @@ const CardSlider: React.FC = () => {
         onMouseLeave={() => setHovered(false)}
         className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar"
       >
-        {items.map((exam, idx) => (
-          <div
-            key={idx}
-            className="snap-start slider-item flex-shrink-0 px-2"
-            style={{ flex: `0 0 ${100 / visible}%`, maxWidth: `${100 / visible}%` }}
-          >
-            <ExamCard title={exam.title} description={exam.description} image={exam.image} />
-          </div>
-        ))}
+        {items
+       .filter((exam) => exam?.title && exam?.description && exam?.image)
+       .map((exam, idx) => (
+        <div key={idx} className="snap-start slider-item flex-shrink-0 px-2">
+        <ExamCard
+        title={exam.title || "No Title"}
+        description={exam.description || "No Description"}
+        image={exam.image || "/assets/default.png"}
+      />
+    </div>
+  ))}
+
       </div>
 
       {/* Next button */}

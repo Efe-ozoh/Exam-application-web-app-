@@ -14,7 +14,7 @@ import QuestionPageSkeleton from "@/components/skeletons/question";
 import QuestionNavigator from "@/components/question/questionNavigator"
 import { NextButton, BackButton, SubmitButton } from "@/components/question/questionButtons";
 
-const Page = () => {
+const QuestionClient = () => {
   const {
     // actions
     handleSelect,
@@ -112,5 +112,5 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default QuestionClient;
          
