@@ -1,5 +1,7 @@
 "use client";
 
+import { Suspense } from "react"
+
 import useQuestion from "@/hooks/useQuestion";
 import Timer from "@/components/question/timer";
 import ExamQuestion from "@/components/question/examQuestions";
@@ -40,6 +42,7 @@ const Page = () => {
   }
 
   return (
+    <Suspense fallback={ <QuestionPageSkeleton /> }>
     <div className="min-h-screen bg-gray-50 px-4 py-10">
       {/* HEADER */}
       <Header currentQuestion={currentQuestion} />
@@ -103,6 +106,8 @@ const Page = () => {
           />
       </div>
     </div>
+
+    </Suspense>
   );
 };
 
