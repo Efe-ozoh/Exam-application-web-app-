@@ -142,18 +142,25 @@ const CardSlider: React.FC = () => {
         onMouseLeave={() => setHovered(false)}
         className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar"
       >
-        {items
-       .filter((exam) => exam?.title && exam?.description && exam?.image)
-       .map((exam, idx) => (
-        <div key={idx} className="snap-start slider-item flex-shrink-0 px-2">
-        <ExamCard
-        title={exam.title || "No Title"}
-        description={exam.description || "No Description"}
-        image={exam.image || "/assets/default.png"}
-      />
-    </div>
-  ))}
-
+        {(items || []).map((exam, idx) => {
+          if (!exam || !exam.title) return null;
+          return (
+            <div
+              key={`${idx}-${exam.title}`}
+              className="snap-start slider-item flex-shrink-0 px-2"
+              style={{
+                flex: `0 0 ${100 / visible}%`,
+                maxWidth: `${100 / visible}%`,
+              }}
+            >
+              <ExamCard
+                title={exam.title || "Untitled"}
+                description={exam.description || ""}
+                image={exam.image || "/assets/default.png"}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Next button */}
