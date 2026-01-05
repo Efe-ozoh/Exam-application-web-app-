@@ -6,74 +6,89 @@ import { postQuestions } from "@/lib/serverRequests";
 export default function AddQuestionPage() {
   const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState({
+  const initialForm = {
     exam: "",
     subject: "",
     question: "",
-    options: {
-      A: "",
-      B: "",
-      C: "",
-      D: "",
-    },
+    options: { A: "", B: "", C: "", D: "" },
     correctAnswer: "",
     year: "",
     imgUrl: "",
-  });
+  };
 
-  function updateOption(letter, value) {
+  const [form, setForm] = useState(initialForm);
+
+  const updateOption = (letter, value) => {
     setForm((prev) => ({
       ...prev,
-      options: {
-        ...prev.options,
-        [letter]: value,
-      },
+      options: { ...prev.options, [letter]: value },
     }));
-  }
+  };
 
-  function updateField(key, value) {
+  const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-  }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const response = await postQuestions(form);
+    // Validation
+    if (!form.options[form.correctAnswer]) {
+      alert("Correct answer must match a filled option");
+      setLoading(false);
+      return;
+    }
 
+    // Normalize payload
+    const payload = {
+      exam: form.exam,
+      subject: form.subject.trim(),
+      question: form.question.trim(),
+      options: form.options,
+      answer: form.correctAnswer, // 🔥 IMPORTANT
+      year: form.year ? Number(form.year) : null,
+      imgUrl: form.imgUrl || null,
+    };
+
+    const response = await postQuestions(payload);
     setLoading(false);
 
     if (response?.success) {
       alert("Question saved successfully!");
-      setForm({
-        exam: "",
-        subject: "",
-        question: "",
-        options: { A: "", B: "", C: "", D: "" },
-        correctAnswer: "",
-        year: "",
-        imgUrl: "",
-      });
+      setForm(initialForm);
     } else {
       alert(response?.message || "Failed to save question");
     }
   };
 
   const answers = ["A", "B", "C", "D"];
-  const exams = ["JAMB", "WAEC", "NECO","WAEC GCE", "NECO GCE", "NABTEB","FUPRE 100LEVEL", "FUPRE GST", "UNIBEN POST-UTME", "UI POST-UTME", "DELSU"]
+  const exams = [
+    "JAMB",
+    "WAEC",
+    "NECO",
+    "WAEC GCE",
+    "NECO GCE",
+    "NABTEB",
+    "FUPRE 100LEVEL",
+    "FUPRE GST",
+    "UNIBEN POST-UTME",
+    "UI POST-UTME",
+    "DELSU",
+  ];
 
   return (
     <div className="max-w-lg mx-auto px-5 py-20 mt-10">
-      <h1 className="text-2xl font-bold mb-5">Add UTME Question</h1>
+      <h1 className="text-2xl font-bold mb-5">Add Exam Question</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-       <select
+        <select
           className="w-full border p-3 rounded"
           value={form.exam}
           onChange={(e) => updateField("exam", e.target.value)}
           required
         >
-          <option value="">-- Choose Exam e.g (JAMB) --</option>
+          <option value="">-- Choose Exam --</option>
           {exams.map((exam) => (
             <option key={exam} value={exam}>
               {exam}
@@ -83,9 +98,9 @@ export default function AddQuestionPage() {
 
         <input
           className="w-full border p-3 rounded"
-          placeholder="Subject"
+          placeholder="Subject (e.g. English)"
           value={form.subject}
-          onChange={(e) => updateField("subject", e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
+          onChange={(e) => updateField("subject", e.target.value)}
           required
         />
 
@@ -97,37 +112,16 @@ export default function AddQuestionPage() {
           required
         />
 
-        <input
-          className="w-full border p-3 rounded"
-          placeholder="Option A"
-          value={form.options.A}
-          onChange={(e) => updateOption("A", e.target.value)}
-          required
-        />
-
-        <input
-          className="w-full border p-3 rounded"
-          placeholder="Option B"
-          value={form.options.B}
-          onChange={(e) => updateOption("B", e.target.value)}
-          required
-        />
-
-        <input
-          className="w-full border p-3 rounded"
-          placeholder="Option C"
-          value={form.options.C}
-          onChange={(e) => updateOption("C", e.target.value)}
-          required
-        />
-
-        <input
-          className="w-full border p-3 rounded"
-          placeholder="Option D"
-          value={form.options.D}
-          onChange={(e) => updateOption("D", e.target.value)}
-          required
-        />
+        {answers.map((opt) => (
+          <input
+            key={opt}
+            className="w-full border p-3 rounded"
+            placeholder={`Option ${opt}`}
+            value={form.options[opt]}
+            onChange={(e) => updateOption(opt, e.target.value)}
+            required
+          />
+        ))}
 
         <select
           className="w-full border p-3 rounded"

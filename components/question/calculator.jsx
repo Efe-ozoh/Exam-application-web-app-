@@ -7,10 +7,10 @@ const Calculator = ({ onClose }) => {
   const [display, setDisplay] = useState("0");
 
   const handleClick = (value) => {
-    if (display === "0") {
+    if (display === "0" && value !== ".") {
       setDisplay(value);
     } else {
-      setDisplay(display + value);
+      setDisplay((prev) => prev + value);
     }
   };
 
@@ -18,11 +18,25 @@ const Calculator = ({ onClose }) => {
 
   const calculate = () => {
     try {
-      setDisplay(eval(display).toString());
+      if (!/^[0-9+\-*/.() ]+$/.test(display)) {
+        setDisplay("Error");
+        return;
+      }
+
+      // Safe evaluation
+      const result = Function(`"use strict"; return (${display})`)();
+      setDisplay(result.toString());
     } catch {
       setDisplay("Error");
     }
   };
+
+  const buttons = [
+    "7","8","9","/",
+    "4","5","6","*",
+    "1","2","3","-",
+    "0",".","+",
+  ];
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
@@ -43,22 +57,26 @@ const Calculator = ({ onClose }) => {
 
         {/* Buttons */}
         <div className="grid grid-cols-4 gap-3 text-lg">
-          {["7","8","9","/","4","5","6","*","1","2","3","-","0",".","=","+"].map((item) => (
+          {buttons.map((item) => (
             <button
               key={item}
-              onClick={() =>
-                item === "=" ? calculate() : handleClick(item)
-              }
+              onClick={() => handleClick(item)}
               className={`py-3 rounded-lg font-semibold
-                ${item === "="
-                  ? "bg-blue-600 text-white col-span-2"
+                ${["/","*","-","+"].includes(item)
+                  ? "bg-orange-400 text-white"
                   : "bg-gray-200 hover:bg-gray-300"}
-                ${["/","*","-","+"].includes(item) ? "bg-orange-400 text-white" : ""}
               `}
             >
               {item}
             </button>
           ))}
+
+          <button
+            onClick={calculate}
+            className="col-span-2 bg-blue-600 text-white py-3 rounded-lg font-semibold"
+          >
+            =
+          </button>
 
           <button
             onClick={clear}
@@ -73,6 +91,3 @@ const Calculator = ({ onClose }) => {
 };
 
 export default Calculator;
-
-
-

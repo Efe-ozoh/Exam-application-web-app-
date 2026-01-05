@@ -1,24 +1,26 @@
+const jambScoreCalculator = (examYear, subject) => {
+  const year = Number(examYear);
 
-  
-  const jambScoreCalculator = ( examYear,  subject ) => {
+  // Normalize subject
+  const normalizedSubject =
+    typeof subject === "string" ? subject.trim().toLowerCase() : "";
 
-    let score = 0;
+  // Default score
+  let score = 0;
 
-    if(Number(examYear) > 2016){
-
-            if(subject?.toLowerCase() === "english"){
-                score += 1.67
-            }else {
-                score += 2.5
-            }
-
-    } else{
-       score += 2;
+  if (!Number.isNaN(year) && year > 2016) {
+    // JAMB CBT scoring
+    if (normalizedSubject === "english") {
+      score = 1.67;
+    } else {
+      score = 2.5;
     }
+  } else {
+    // Pre-2017 or invalid year
+    score = 2;
+  }
 
-    return score;
-    
+  return score;
+};
 
-  };
-
-  export default jambScoreCalculator;
+export default jambScoreCalculator;

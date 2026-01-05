@@ -10,14 +10,22 @@ const useQuestion = () => {
   const searchParams = useSearchParams();
 
   const examType = searchParams.get("examType");
-  const subjects = searchParams.get("subjects");
-  const year = searchParams.get("year");
+ const year = searchParams.get("year");
   const [questions, setQuestions] = useState([]);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState({}); // {0: "A", 1: "B", ...}
   const [submitted, setSubmitted] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
-  const [result, setResult] = useState();
+  const [result, setResult] = useState(null);
+
+ 
+ const subjectsParam = searchParams.get("subjects");
+
+const subjects = subjectsParam
+  ? subjectsParam.split(",").filter(Boolean)
+  : [];
+
+  
 
   const currentQuestion = questions[index];
 
@@ -91,26 +99,26 @@ const useQuestion = () => {
 
   // Submits quiz and calculate score
   const submitQuestions = () => {
-    
-    // Convert answers object to ordered array
-    const userAnswers = questions.map((_, i) => answers[i] || null);
+    if (!questions.length) return;
+  
+    const userAnswers = questions.map((_, i) => answers[i] ?? "");
   
     const userScore = calculateScore(userAnswers, questions);
-  
     setResult(userScore);
   };
+  
 
 
   // displays score modal
   
   const displayScoreModal = () => {
-
-    setShowScoreModal((prev) => !prev);
-    
+    if (!questions.length) return;
+  
+    setShowScoreModal(true);
     setSubmitted(false);
-
     submitQuestions();
   };
+  
 
 
 
