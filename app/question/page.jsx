@@ -42,7 +42,7 @@ const Page = () => {
   }
 
   return (
-    <Suspense fallback={ <QuestionPageSkeleton /> }>
+   
     <div className="min-h-screen bg-gray-50 px-4 py-10">
       {/* HEADER */}
       <Header currentQuestion={currentQuestion} />
@@ -53,7 +53,10 @@ const Page = () => {
        <CalculatorToggle />
 
         {/* Timer */}
-     <Timer onTimeUp={displayScoreModal} />
+      <Suspense fallback={ <QuestionPageSkeleton /> }>
+        <Timer onTimeUp={displayScoreModal} />
+     
+       </Suspense>
 
      </div>
 
@@ -106,8 +109,6 @@ const Page = () => {
           />
       </div>
     </div>
-
-    </Suspense>
   );
 };
 
