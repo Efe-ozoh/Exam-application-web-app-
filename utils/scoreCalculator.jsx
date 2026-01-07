@@ -52,7 +52,7 @@ export const calculateScore = (userAnswers = [], questions = []) => {
     };
   });
 
-  const totalExamScore = Math.round(score);
+  const totalExamScore = Math.floor(Math.round(score));
   const percentage = totalMarkingScore > 0 ? (score / totalMarkingScore) * 100 : 0;
 
   return {
