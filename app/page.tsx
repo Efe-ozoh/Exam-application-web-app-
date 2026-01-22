@@ -21,8 +21,8 @@ export default async function Home() {
 
           <Link href="/exam_option">
             <button
-              className="mt-6 px-8 py-3 sm:px-10 sm:py-4 bg-blue-700 hover:bg-blue-800 
-              transition rounded-full text-white font-bold text-base sm:text-lg w-full sm:w-auto"
+              className="mt-6 px-8 py-3 sm:px-8 sm:py-4 bg-blue-700 hover:bg-blue-800 
+              transition rounded-full text-white font-bold text-base sm:text-lg w-1/2 sm:w-auto"
             >
               Get Started
             </button>

@@ -22,12 +22,12 @@ const Sidedrawer = ({open}) => {
           <Link href="/exam_option" className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition">
             <MenuBookOutlinedIcon />  Practice
           </Link>
-          <a className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition">
+          <Link href="/news" className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition">
             <ArticleIcon />  Education News
-          </a>
-          <a className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition">
-            <InfoOutlineIcon />  About
-          </a>
+          </Link>
+          <Link href="/past_questions" className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition">
+            <InfoOutlineIcon />  Past Questions
+          </Link>
         </nav>
     </div>
   )

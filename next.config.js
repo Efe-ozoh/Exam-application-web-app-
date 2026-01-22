@@ -9,7 +9,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*',  // allow any
+        hostname: 'myschoolgist.com',  // allow any
         port: '',
         pathname: '/**',
       },

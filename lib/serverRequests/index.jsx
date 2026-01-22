@@ -38,4 +38,27 @@
       return { success: false, message: error.message };
     }
   };
+
+
+
+  // fetch news from server
+
+ export const fetchNews = async () => {
+    try {
+      const url = "https://education-news.onrender.com";
+      const res = await fetch(url);
+  
+      if (!res.ok) {
+        throw new Error(`Request failed: ${res.status}`);
+      }
+  
+      const data = await res.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch news:", error);
+      return null;
+    }
+  };
+  
+  
   
