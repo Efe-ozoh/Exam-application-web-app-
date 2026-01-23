@@ -92,7 +92,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <hr className="border-gray-500 mx-6" />
+        <hr className="border-white mx-6" />
 
         <p className="text-center text-white py-4 text-sm">
           ©{new Date().getFullYear()} NaijaPrep. All rights reserved.

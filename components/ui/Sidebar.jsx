@@ -24,7 +24,7 @@ export default function Sidebar() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative z-50">
 
       <div className="w-full flex items-center p-3 z-40 transition-opacity duration-300" id="topBar">
       <span className="text-2xl font-bold mx-5 my-5 text-blue-700">NaijaPrep</span>
@@ -33,7 +33,7 @@ export default function Sidebar() {
       <div className="justify-endw-full flex fixed top-0 right-0">
         <button
         onClick={() => setOpen(!open)}
-        className="p-3 m-3 text-white m-5 bg-blue-700 rounded-xl shadow-lg z-50 flex items-center justify-center"
+        className="relative p-3 m-3 text-white m-5 bg-blue-700 rounded-xl shadow-lg z-50 flex items-center justify-center"
       >
         {open ? <CloseIcon /> : <MenuIcon />}
       </button>
