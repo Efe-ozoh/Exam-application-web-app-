@@ -10,13 +10,14 @@ type Props = {
   title: string;
   description: string;
   image: string;
+  url: string;
 };
 
-export default function ExamCard({ title, description, image }: Props) {
+export default function ExamCard({ title, description, image, url }: Props) {
   return (
     
-  <Card sx={{ maxWidth: 240, width: '100%', mx: 'auto', my: '15px', }}>
-    <Link href="/exam_option">
+  <Card sx={{ maxWidth: 290, width: '100%', mx: 'auto', my: '15px', }}>
+    <Link href={url ? url : "/" }>
       <CardActionArea>
         <CardMedia
           component="img"
@@ -36,5 +37,65 @@ export default function ExamCard({ title, description, image }: Props) {
       </Link>
     </Card>
    
+  );
+}
+
+
+
+export function ServiceCard({ title, description, image, url }: Props) {
+  return (
+    <Card
+      sx={{
+        mx: 'auto',
+        my: 2,
+        width: {
+          xs: '90%', // mobile
+          sm: 250,  // tablet
+          md: 280,  // desktop
+        },
+        height: 'auto',
+      }}
+    >
+      <Link href={url ? url : "/"} >
+      <CardActionArea>
+        <CardMedia
+          component="img"
+          image={image}
+          alt={title}
+          sx={{
+            width: '100%',
+            height: {
+              xs: 160,  // mobile
+              sm: 180,  // tablet
+              md: 200,  // desktop
+            },
+            objectFit: 'cover', // this makes the image cover the area
+            borderTopLeftRadius: '4px',
+            borderTopRightRadius: '4px',
+          }}
+        />
+        <CardContent>
+          <Typography
+            gutterBottom
+            variant="h6"
+            component="div"
+            align="center"
+            sx={{ fontSize: { xs: 16, sm: 18, md: 20 } }}
+          >
+            {title}
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            align="center"
+            sx={{ fontSize: { xs: 12, sm: 14, md: 16 } }}
+          >
+            {description}
+          </Typography>
+        </CardContent>
+      </CardActionArea>
+      
+      </Link>
+    </Card>
   );
 }
