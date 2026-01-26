@@ -1,4 +1,3 @@
-import * as React from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
@@ -6,13 +5,8 @@ import Typography from '@mui/material/Typography';
 import CardActionArea from '@mui/material/CardActionArea';
 import Link from '@/node_modules/next/link';
 
-type Props = {
-  title: string;
-  description: string;
-  image: string;
-};
 
-export default function ExamCard({ title, description, image}: Props) {
+export default function ExamCard({ title, description, image}) {
   return (
     
   <Card sx={{ maxWidth: 290, width: '100%', mx: 'auto', my: '15px', }}>
@@ -41,7 +35,7 @@ export default function ExamCard({ title, description, image}: Props) {
 
 
 
-export function ServiceCard({ title, description, image, url }: Props) {
+export function ServiceCard({ title, description, image, url }) {
   return (
     <Card
       sx={{

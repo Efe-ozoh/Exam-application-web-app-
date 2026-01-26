@@ -35,7 +35,7 @@
     ".next/types/**/*.ts",
     "components/card.jsx",
     ".next/dev/types/**/*.ts"
-  ],
+, "components/home/cardSlider.jsx"  ],
   "exclude": [
     "node_modules"
   ]

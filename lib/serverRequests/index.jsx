@@ -45,7 +45,7 @@
 
  export const fetchNews = async () => {
     try {
-      const url = "https://education-news.onrender.com";
+      const url = "https://education-news.onrender.com/api/news";
       const res = await fetch(url);
   
       if (!res.ok) {

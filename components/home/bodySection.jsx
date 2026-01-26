@@ -24,7 +24,7 @@ const BodySection = () => {
         <CardSlider />
       </section>
 
-      <div className="max-w-3xl mx-auto text-center my-10 px-4 sm:px-8">
+      <div className="max-w-3xl mx-auto text-center my-6 px-4 sm:px-8">
           <h3 className="text-blue-700 text-lg sm:text-2xl font-bold mb-4 pt-10">
             Best Assistance you can Get!
           </h3>
