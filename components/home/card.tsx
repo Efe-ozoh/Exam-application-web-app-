@@ -10,14 +10,13 @@ type Props = {
   title: string;
   description: string;
   image: string;
-  url: string;
 };
 
-export default function ExamCard({ title, description, image, url }: Props) {
+export default function ExamCard({ title, description, image}: Props) {
   return (
     
   <Card sx={{ maxWidth: 290, width: '100%', mx: 'auto', my: '15px', }}>
-    <Link href={url ? url : "/" }>
+    <Link href="/exam_option">
       <CardActionArea>
         <CardMedia
           component="img"
