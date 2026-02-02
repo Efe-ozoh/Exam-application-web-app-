@@ -1,5 +1,3 @@
-import React from 'react'
-
 import CardSlider from './cardSlider';
 import Services from "./services";
 
@@ -30,7 +28,7 @@ const BodySection = () => {
           </h3>
 
           <p className="text-gray-600 text-base sm:text-lg leading-relaxed text-justify">
-            We offer the best assistance you can get in helping you stay updated, connected and accurate in acadamics
+            We offer the best assistance you can get in helping you stay updated, connected and accurate in your acadamics
           </p>
         </div>
 
@@ -39,6 +37,6 @@ const BodySection = () => {
       </section>
       </>
   )
-}
+};
 
 export default BodySection;

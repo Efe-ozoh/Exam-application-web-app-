@@ -1,7 +1,14 @@
 import QuestionOptions from "./questionOptions";
 
-const ExamQuestion =  ({currentQuestion, index, total, selectedAnswer, handleSelect,}) => {
+const ExamQuestion = ({
+  currentQuestion,
+  index,
+  total,
+  selectedAnswer,
+  handleSelect,
+}) => {
 
+  console.log(currentQuestion)
   return (
     <div>
       <div className="flex justify-between mb-4 text-gray-700">
@@ -10,16 +17,27 @@ const ExamQuestion =  ({currentQuestion, index, total, selectedAnswer, handleSel
         </span>
       </div>
 
-      <div className="text-lg lg:text-lg mb-6">
-      {currentQuestion?.question
-  ?.split("\n\n")
-  .map((para) => para.trim())
-  .filter(Boolean) // remove empty strings
-  .map((para, idx) => (
-    <p key={idx} className="mb-4 leading-relaxed">{para}</p>
-  ))}
+      <div className="text-lg mb-6">
+        {currentQuestion?.question
+          ?.split("\n\n")
+          .map((para) => para.trim())
+          .filter(Boolean)
+          .map((para, idx) => (
+            <p key={idx} className="mb-4 leading-relaxed">
+              {para}
+            </p>
+          ))}
 
-
+        {currentQuestion?.imgUrl && (
+          <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 m-auto">
+            <img
+              src={currentQuestion.imgUrl}
+              alt="Exam illustration"
+              className="w-full h-auto rounded-md shadow"
+              loading="lazy"
+            />
+          </div>
+        )}
       </div>
 
       <QuestionOptions
@@ -30,6 +48,5 @@ const ExamQuestion =  ({currentQuestion, index, total, selectedAnswer, handleSel
     </div>
   );
 };
-
 
 export default ExamQuestion;

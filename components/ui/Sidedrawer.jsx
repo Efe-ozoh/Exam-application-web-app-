@@ -19,7 +19,7 @@ const Sidedrawer = ({open}) => {
           <Link href="/" className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition">
             <HomeIcon />  Home
           </Link>
-          <Link href="/exam_option" className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition">
+          <Link href="/exams" className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition">
             <MenuBookOutlinedIcon />  Practice
           </Link>
           <Link href="/news" className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition">

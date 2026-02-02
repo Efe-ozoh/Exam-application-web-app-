@@ -27,31 +27,43 @@ const useQuestion = () => {
       try {
         const response = await fetchQuestions(examType, year, subjects);
         const examQuestions = response?.questions;
+  
         if (!Array.isArray(examQuestions)) {
           console.error("Questions must be an array");
           return;
         }
-
-        const formatted = examQuestions?.map((q) => ({
+  
+        const formatted = examQuestions.map((q) => ({
           question: q.question,
           options: { A: q.options.A, B: q.options.B, C: q.options.C, D: q.options.D },
           answer: q.answer?.toUpperCase() ?? null,
           subject: q.subject,
           exam: q.exam ?? "Unknown",
-          year: q.year ?? "Unkown",
+          year: q.year ?? "Unknown",
+          imgUrl: q.imgUrl ?? null,
         }));
-
+        
         setQuestions(formatted);
       } catch (error) {
         console.error("Error fetching questions:", error);
       }
     };
-
+  
     getQuestions();
-  }, [examType, year, subjects]);
+  }, [examType, year, subjectsParam]);
+  
+  useEffect(() => {
+    setIndex(0);
+    setAnswers({});
+    setSubmitted(false);
+    setShowScoreModal(false);
+    setResult(null);
+  }, [examType, year, subjectsParam]);
+  
 
   const handleSelect = (option) => {
     setAnswers((prev) => ({ ...prev, [index]: option }));
+    console.log(currentQuestion)
   };
 
   const nextQuestion = () => index < questions.length - 1 && setIndex(index + 1);
@@ -59,6 +71,7 @@ const useQuestion = () => {
   const questionNavigator = (i) => {
     setIndex(i);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    console.log(currentQuestion)
   };
 
   const submit = () => setSubmitted((prev) => !prev);

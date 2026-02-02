@@ -1,5 +1,3 @@
-import React from "react";
-
 import HeadSection from "@/components/home/headSection";
 import BodySection from "@/components/home/bodySection";
 import Footer from "@/components/home/footer";

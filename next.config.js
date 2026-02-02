@@ -8,10 +8,16 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'myschoolgist.com',  // allow any
-        port: '',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "myschoolgist.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "i.imghippo.com",
+        port: "",
+        pathname: "/**",
       },
     ],
   },

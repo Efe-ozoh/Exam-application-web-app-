@@ -18,7 +18,7 @@ const HeadSection = () => {
         We've got you covered for free.
       </h3>
 
-      <Link href="/exam_option">
+      <Link href="/exams">
         <button
           className="mt-6 px-8 py-3 sm:px-8 sm:py-4 bg-blue-700 hover:bg-blue-800 
           transition rounded-full text-white font-bold text-base sm:text-lg w-1/2 sm:w-auto"
