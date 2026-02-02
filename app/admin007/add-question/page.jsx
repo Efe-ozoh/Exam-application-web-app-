@@ -7,7 +7,7 @@ const AddQuestionPage = async () => {
   const isAdmin = cookieStore.get("admin_auth");
 
   if (!isAdmin) {
-    redirect("/admin-login");
+    redirect("/admin007/login");
   }
 
   return <AddQuestionClient />;

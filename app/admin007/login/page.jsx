@@ -14,7 +14,7 @@ const AdminLogin = () => {
     });
 
     if (res.ok) {
-      router.push("/admin/add-question");
+      router.push("/admin007/add-question");
     } else {
       alert("Invalid admin password");
     }
