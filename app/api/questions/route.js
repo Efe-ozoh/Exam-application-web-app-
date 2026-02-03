@@ -8,6 +8,9 @@ export async function POST(req) {
 
     const body = await req.json();
 
+    const { exam, year, subject, question, options, answer, imgUrl } = body;
+
+
     // Basic validation
     if (
       !exam ||
@@ -16,8 +19,7 @@ export async function POST(req) {
       !options.A ||
       !options.B ||
       !options.C ||
-      !options.D ||
-      !correctAnswer
+      !options.D 
     ) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
@@ -36,7 +38,7 @@ export async function POST(req) {
         C: options.C,
         D: options.D,
       },
-      answer: correctAnswer,
+      answer,
       imgUrl: imgUrl || null,
     });
 
