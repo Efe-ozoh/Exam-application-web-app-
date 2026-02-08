@@ -35,9 +35,9 @@ export default function Sidebar() {
     <Image
       src="/assets/eduliver-logo.png"
       alt="Eduliver logo_Free JAMB CBT"
-      width={60}
-      height={60}
-      className="h-12 w-auto"
+      width={70}
+      height={70}
+      className="h-17 w-auto"
       priority
     />
   </div>
