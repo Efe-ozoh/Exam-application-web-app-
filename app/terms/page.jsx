@@ -153,7 +153,7 @@ export default function Terms() {
             <h2 className="text-2xl font-semibold mb-2 text-blue-700">9. Contact Us</h2>
             <p>If you have questions or concerns about these Terms of Service, you can contact us at:</p>
             <ul className="list-disc ml-6">
-              <li>Email: <a href="mailto:support@eduliver.com" className="text-blue-600">eduliver1@gmail.com</a></li>
+              <li>Email: <a href="mailto:eduliver1@gmail.com" className="text-blue-600">eduliver1@gmail.com</a></li>
               <li>Phone: +234 814 748 2298</li>
             </ul>
           </section>

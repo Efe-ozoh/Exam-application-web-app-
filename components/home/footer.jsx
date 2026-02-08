@@ -13,10 +13,10 @@ const Footer = () => {
             <a href="https://x.com/Ozoh17" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:underline">
               <X /> X
             </a>
-            <a href="https://instagram.com/yourusername" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:underline">
+            <a href="/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:underline">
               <Instagram /> Instagram
             </a>
-            <a href="mailto:support@eduliver.com" className="flex items-center gap-2 hover:underline">
+            <a href="mailto:eduliver1@gmail.com" className="flex items-center gap-2 hover:underline">
               <EmailOutlined /> Email
             </a>
           </div>

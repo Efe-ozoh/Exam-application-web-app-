@@ -198,7 +198,7 @@ export default function Policy() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <a href="mailto:support@eduliver.com" className="p-4 rounded-lg bg-gray-50 border hover:border-blue-300 transition-colors">
                 <span className="block font-bold">Email</span>
-                <span className="text-blue-600">eduliver@gmail.com</span>
+                <span className="text-blue-600">eduliver1@gmail.com</span>
               </a>
               <div className="p-4 rounded-lg bg-gray-50 border">
                 <span className="block font-bold">Phone</span>
