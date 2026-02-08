@@ -31,7 +31,7 @@ const HeadSection = () => {
     {/* Image */}
     <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg">
       <Image
-        src="/assets/studying.png"
+        src="/assets/hero-image.png"
         alt="Free JAMB CBT"
         width={450}
         height={450}
