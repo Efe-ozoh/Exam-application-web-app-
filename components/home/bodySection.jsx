@@ -7,7 +7,7 @@ const BodySection = () => {
     <section className="px-4 sm:px-8 py-16">
         <div className="max-w-3xl mx-auto text-center">
           <h3 className="text-blue-700 text-lg sm:text-2xl font-bold mb-4">
-            NaijaPrep makes your exam preparation fun and exciting!
+            Eduliver makes your exam preparation fun and exciting!
           </h3>
 
           <p className="text-gray-600 text-base sm:text-lg leading-relaxed text-justify">

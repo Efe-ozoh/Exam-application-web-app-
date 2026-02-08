@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NaijaPrep",
-  description: "[desc here]",
+  title: "Eduliver | Your UTME Success Hub",
+  description: "Your UTME Success Hub",
 };
 
 export default function RootLayout({

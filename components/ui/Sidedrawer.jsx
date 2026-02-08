@@ -12,7 +12,7 @@ const Sidedrawer = ({open}) => {
         open ? "translate-x-0" : "-translate-x-full"
       }`}>
        <div className="p-6 border-b bg-blue-700 text-white font-bold text-2xl">
-          Exam Prep
+          Eduliver
         </div>
 
         <nav className="p-4 flex flex-col space-y-4 text-blue-700 font-medium">

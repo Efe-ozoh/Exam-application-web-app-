@@ -3,6 +3,7 @@
 import { useState } from "react";
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import Image from "next/image"
 
 import Sidedrawer from "./Sidedrawer"
 
@@ -27,7 +28,16 @@ export default function Sidebar() {
     <div className="relative z-50">
 
       <div className="w-full flex items-center p-3 z-40 transition-opacity duration-300" id="topBar">
-      <span className="text-2xl font-bold mx-5 my-5 text-blue-700">NaijaPrep</span>
+
+        <div className="flex mx-5">
+       <Image   
+        src="/assets/eduliver-logo.png"
+        alt="Eduliver logo_Free JAMB CBT"
+        width={80}
+        height={80}
+        className="w-full h-auto"/>
+     
+      </div>
 
       {/* Toggle Button */}
       <div className="justify-endw-full flex fixed top-0 right-0">
