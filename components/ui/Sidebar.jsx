@@ -27,28 +27,29 @@ export default function Sidebar() {
   return (
     <div className="relative z-50">
 
-      <div className="w-full flex items-center p-3 z-40 transition-opacity duration-300" id="topBar">
+<div
+  id="topBar"
+  className="w-full flex items-center justify-between px-4 py-3 z-40 transition-opacity duration-300"
+>
+  <div className="flex items-center gap-3">
+    <Image
+      src="/assets/eduliver-logo.png"
+      alt="Eduliver logo_Free JAMB CBT"
+      width={60}
+      height={60}
+      className="h-12 w-auto"
+      priority
+    />
+  </div>
 
-        <div className="flex mx-5">
-       <Image   
-        src="/assets/eduliver-logo.png"
-        alt="Eduliver logo_Free JAMB CBT"
-        width={80}
-        height={80}
-        className="w-full h-auto"/>
-     
-      </div>
+  <button
+    onClick={() => setOpen(!open)}
+    className="p-3 text-white bg-blue-700 rounded-xl shadow-lg z-50 flex items-center justify-center h-12 w-12"
+  >
+    {open ? <CloseIcon /> : <MenuIcon />}
+  </button>
+</div>
 
-      {/* Toggle Button */}
-      <div className="justify-endw-full flex fixed top-0 right-0">
-        <button
-        onClick={() => setOpen(!open)}
-        className="relative p-3 m-3 text-white m-5 bg-blue-700 rounded-xl shadow-lg z-50 flex items-center justify-center"
-      >
-        {open ? <CloseIcon /> : <MenuIcon />}
-      </button>
-      </div>
-      </div>
 
       {/* Overlay for mobile */}
       {open && (
