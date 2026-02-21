@@ -24,10 +24,8 @@ const ExamOptions = () => {
     "CRS",
     "Geography",
     "Agricultural-Science",
-    "Accounting",
+    "Financial-Accounting",
     "Commerce",
-    "Further-Mathematics",
-    "Computer-Science",
   ]
 
   const router = useRouter();
