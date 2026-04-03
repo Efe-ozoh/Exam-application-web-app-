@@ -23,7 +23,7 @@ const ExamOptions = () => {
     "Literature-in-English",
     "CRS",
     "Geography",
-    "Agricultural-Science",
+    "Agricultural Science",
     "Financial-Accounting",
     "Commerce",
   ]
