@@ -15,7 +15,13 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "i.imghippo.com",
+        hostname: "postimg.cc",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "myschool.ng",
         port: "",
         pathname: "/**",
       },
