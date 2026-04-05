@@ -3,6 +3,16 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Sidebar from "@/components/ui/Sidebar";
 import 'antd/dist/reset.css';
 import './globals.css';
+import { MathJaxContext } from "better-react-mathjax";
+
+const config = {
+  loader: { load: ["input/tex", "output/chtml"] },
+  tex: {
+    inlineMath: [["\\(", "\\)"]],
+    displayMath: [["$$", "$$"]],
+  },
+};
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,15 +36,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased` }
-      >
-        <Sidebar />
-        
-        <main className="w-full">
-          {children}
-        </main>
-      </body>
+    <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+  <MathJaxContext config={config}>
+    
+    <Sidebar />
+
+    <main className="w-full">
+      {children}
+    </main>
+
+  </MathJaxContext>
+</body>
     </html>
   );
 }

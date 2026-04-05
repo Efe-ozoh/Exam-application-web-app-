@@ -1,6 +1,6 @@
-import Latex from "react-latex-next";
-import "katex/dist/katex.min.css";
+"use client";
 
+import { MathJax } from "better-react-mathjax";
 import QuestionOptions from "./questionOptions";
 
 const ExamQuestion = ({
@@ -10,8 +10,6 @@ const ExamQuestion = ({
   selectedAnswer,
   handleSelect,
 }) => {
-
-  console.log(currentQuestion)
   return (
     <div>
       <div className="flex justify-between mb-4 text-gray-700">
@@ -22,15 +20,9 @@ const ExamQuestion = ({
 
       <div className="text-lg mb-6">
         
-      {currentQuestion?.question
-     ?.split("\n\n")
-     .map((para) => para.trim())
-     .filter(Boolean)
-     .map((para, idx) => (
-     <p key={idx} className="mb-4 leading-relaxed">
-      <Latex>{String(para)}</Latex>
-    </p>
-  ))}
+        <MathJax dynamic>
+          {currentQuestion?.question}
+        </MathJax>
 
         {currentQuestion?.imgUrl && (
           <div className="w-full sm:w-2/3 md:w-1/2 lg:w-1/3 m-auto">
@@ -42,6 +34,7 @@ const ExamQuestion = ({
             />
           </div>
         )}
+
       </div>
 
       <QuestionOptions
