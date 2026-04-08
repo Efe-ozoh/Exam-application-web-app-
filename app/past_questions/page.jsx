@@ -1,5 +1,5 @@
 import React from 'react'
-import PastQuestions from "./client/Past_questions"
+import PastQuestions from "./client/PastQuestions";
 
 export const metadata = {
   title: "Free Past Questions",
