@@ -21,7 +21,7 @@ const ExamOptions = () => {
     "Economics",
     "Government",
     "Literature-in-English",
-    "CRS",
+    "CRK",
     "Geography",
     "Agricultural Science",
     "Financial-Accounting",
@@ -32,7 +32,7 @@ const ExamOptions = () => {
 
   const [examMode, setExamMode] = useState("Mock");
   const [examType, setExamType] = useState("JAMB");
-  const [year, setYear] = useState(new Date().getFullYear() > 2024 ? 2024 : new Date().getFullYear());
+  const [year, setYear] = useState(2024);
   const [selected, setSelected] = useState([]);
 
   const maxAllowed = useMemo(() => (examType === "JAMB" || examType === "POST-UTME" ? 4 : 1), [examType]);
@@ -69,7 +69,7 @@ const ExamOptions = () => {
   function handleReset() {
     setSelected([]);
     setExamType("JAMB");
-    setYear(new Date().getFullYear() > 2024 ? 2024 : new Date().getFullYear());
+    setYear(2024);
   }
 
   useEffect(() => {

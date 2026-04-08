@@ -1,11 +1,10 @@
 import React, { useMemo } from "react";
 
-export default function YearDropdown({ value, onChange, start = 2010, end = 2024 }) {
-  const years = useMemo(() => {
-    const arr = [];
-    for (let y = end; y >= start; y--) arr.push(y);
-    return arr;
-  }, [start, end]);
+export default function YearDropdown({ value, onChange}) {
+
+    const years = [2024];
+ 
+ 
 
   return (
     <div>
