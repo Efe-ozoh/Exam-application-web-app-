@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { fetchQuestions } from "@/lib/serverRequests/index";
+import { fetchQuestions, savePracticeResult } from "@/lib/serverRequests/index";
 import { calculateScore } from "@/utils/scoreCalculator";
 
 const useQuestion = () => {
@@ -11,7 +11,21 @@ const useQuestion = () => {
   const examType = searchParams?.get("examType") ?? "";
   const year = searchParams?.get("year") ?? "";
   const subjectsParam = searchParams?.get("subjects") ?? "";
-  const subjects = subjectsParam ? subjectsParam.split(",").filter(Boolean) : [];
+
+  // ExamOption sends the subjects as a JSON array. Older links used a
+  // comma-separated list, so fall back to that for backwards compatibility.
+  const subjects = (() => {
+    if (!subjectsParam) return [];
+
+    try {
+      const parsed = JSON.parse(subjectsParam);
+      return Array.isArray(parsed)
+        ? parsed.filter((subject) => typeof subject === "string")
+        : [];
+    } catch {
+      return subjectsParam.split(",").filter(Boolean);
+    }
+  })();
 
   const [questions, setQuestions] = useState([]);
   const [index, setIndex] = useState(0);
@@ -19,6 +33,7 @@ const useQuestion = () => {
   const [submitted, setSubmitted] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [result, setResult] = useState(null);
+  const savedResultRef = useRef(false);
 
   const currentQuestion = questions[index] ?? null;
 
@@ -53,6 +68,7 @@ const useQuestion = () => {
   }, [examType, year, subjectsParam]);
   
   useEffect(() => {
+    savedResultRef.current = false;
     setIndex(0);
     setAnswers({});
     setSubmitted(false);
@@ -77,14 +93,49 @@ const useQuestion = () => {
   const submit = () => setSubmitted((prev) => !prev);
 
   const submitQuestions = () => {
-    if (!questions.length) return;
-    const userAnswers = questions?.map((_, i) => answers[i] ?? "");
-    setResult(calculateScore(userAnswers, questions));
+    if (!questions.length) return null;
+
+    const userAnswers = questions.map((_, i) => answers[i] ?? "");
+    const nextResult = calculateScore(userAnswers, questions);
+
+    setResult(nextResult);
+    return nextResult;
+  };
+
+  const saveCompletedResult = async (nextResult) => {
+    // The modal toggles open and closed, and the timer can also complete the
+    // practice. Only store one result per completed practice.
+    if (!nextResult || savedResultRef.current) return;
+
+    savedResultRef.current = true;
+
+    try {
+      await savePracticeResult({
+        examType: examType || "Practice",
+        year: year ? Number(year) : null,
+        subjects,
+        score: nextResult.score,
+        totalMarkingScore: nextResult.totalMarkingScore,
+        totalQuestions: nextResult.total,
+        correctCount: nextResult.breakdown.filter((item) => item.isCorrect)
+          .length,
+        percentage: nextResult.percentage,
+      });
+    } catch (error) {
+      // Let the dashboard retry if the save failed (offline, session expired).
+      savedResultRef.current = false;
+      console.error("Failed to save practice result:", error);
+    }
   };
 
   const displayScoreModal = () => {
     if (!questions.length) return;
-    submitQuestions();
+
+    if (!showScoreModal) {
+      const nextResult = submitQuestions();
+      void saveCompletedResult(nextResult);
+    }
+
     setSubmitted(false);
     setShowScoreModal((prev) => !prev);
   };

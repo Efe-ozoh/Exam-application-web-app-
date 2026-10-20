@@ -1,20 +1,52 @@
 import { NextResponse } from "next/server";
 
-export async function POST(req) {
-  const { password } = await req.json();
+import {
+  ADMIN_COOKIE_MAX_AGE,
+  ADMIN_COOKIE_NAME,
+  createAdminSessionToken,
+  safeCompareSecret,
+} from "@/lib/auth/admin-session";
 
-  if (password === process.env.ADMIN_PASSWORD) {
+export async function POST(req) {
+  try {
+    const body = await req.json().catch(() => null);
+    const password = body?.password;
+    const expected = process.env.ADMIN_PASSWORD;
+
+    if (!expected) {
+      return NextResponse.json(
+        { success: false, message: "Admin login is not configured." },
+        { status: 500 },
+      );
+    }
+
+    if (
+      typeof password !== "string" ||
+      !safeCompareSecret(password, expected)
+    ) {
+      return NextResponse.json(
+        { success: false, message: "Invalid admin password" },
+        { status: 401 },
+      );
+    }
+
     const response = NextResponse.json({ success: true });
 
-    response.cookies.set("admin_auth", "true", {
+    // Signed, expiring token instead of the literal string "true" so the
+    // cookie cannot be forged by anyone who can send a request.
+    response.cookies.set(ADMIN_COOKIE_NAME, createAdminSessionToken(), {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24, // 1 day
+      maxAge: ADMIN_COOKIE_MAX_AGE,
     });
 
     return response;
+  } catch {
+    return NextResponse.json(
+      { success: false, message: "Invalid request body" },
+      { status: 400 },
+    );
   }
-
-  return NextResponse.json({ success: false }, { status: 401 });
-};
+}

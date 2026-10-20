@@ -1,44 +1,72 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongoose";
 import Question from "@/lib/models/question.schema.jsx";
+import {
+  ADMIN_COOKIE_NAME,
+  isValidAdminSessionToken,
+} from "@/lib/auth/admin-session";
+
+const allowedAnswers = ["A", "B", "C", "D"];
 
 export async function POST(req) {
   try {
+    const cookie = req.cookies.get(ADMIN_COOKIE_NAME);
+
+    if (!isValidAdminSessionToken(cookie?.value)) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { success: false, message: "Request body is required" },
+        { status: 400 }
+      );
+    }
 
     const { exam, year, subject, question, options, answer, imgUrl } = body;
+    const normalizedOptions = options && typeof options === "object" ? options : {};
+    const normalizedYear = year === "" || year === null || year === undefined ? null : Number(year);
 
-
-    // Basic validation
-    if (
-      !exam ||
-      !subject ||
-      !question ||
-      !options.A ||
-      !options.B ||
-      !options.C ||
-      !options.D 
-    ) {
+    if (!exam || !subject || !question) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
         { status: 400 }
       );
     }
 
+    if (!allowedAnswers.every((letter) => normalizedOptions[letter] && String(normalizedOptions[letter]).trim())) {
+      return NextResponse.json(
+        { success: false, message: "All four options are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!answer || !allowedAnswers.includes(answer)) {
+      return NextResponse.json(
+        { success: false, message: "Correct answer must be one of A, B, C, or D" },
+        { status: 400 }
+      );
+    }
+
     const newQuestion = await Question.create({
-      exam,
-      subject,
-      year,
-      question,
+      exam: String(exam).trim(),
+      subject: String(subject).trim(),
+      year: normalizedYear,
+      question: String(question).trim(),
       options: {
-        A: options.A,
-        B: options.B,
-        C: options.C,
-        D: options.D,
+        A: String(normalizedOptions.A).trim(),
+        B: String(normalizedOptions.B).trim(),
+        C: String(normalizedOptions.C).trim(),
+        D: String(normalizedOptions.D).trim(),
       },
-      answer,
+      answer: String(answer).toUpperCase(),
       imgUrl: imgUrl || null,
     });
 
@@ -50,57 +78,48 @@ export async function POST(req) {
     console.error(error);
 
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, message: error.message || "Something went wrong" },
       { status: 500 }
     );
   }
-};
-
-
-
-
-
+}
 
 export async function GET(req) {
+  try {
+    await connectDB();
 
-  
-    try {
-      await connectDB();
-    
-      const { searchParams } = new URL(req.url);
-    
-      const examType = searchParams.get("examType");
-      const yearParam = searchParams.get("year");
-      const subjectsParam = searchParams.get("subjects");
-    
-      let subjects = [];
-      if (subjectsParam) {
-        try {
-          subjects = JSON.parse(subjectsParam);
-        } catch {
-          subjects = [];
-        }
+    const { searchParams } = new URL(req.url);
+    const examType = searchParams.get("examType");
+    const yearParam = searchParams.get("year");
+    const subjectsParam = searchParams.get("subjects");
+
+    let subjects = [];
+
+    if (subjectsParam) {
+      try {
+        const parsed = JSON.parse(subjectsParam);
+        subjects = Array.isArray(parsed) ? parsed : [];
+      } catch {
+        subjects = [];
       }
-    
-      const query = {};
-    
-      if (examType) query.exam = examType;
-      if (yearParam) query.year = Number(yearParam);
-      if (subjects.length > 0) query.subject = { $in: subjects };
-    
-      
-      const questions = await Question.find(query);
-    
-      return NextResponse.json({ success: true, questions });
-    
-    } catch (error) {
-      console.error(error);
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
     }
-    
+
+    const query = {};
+
+    if (examType) query.exam = examType;
+    if (yearParam) query.year = Number(yearParam);
+    if (subjects.length > 0) query.subject = { $in: subjects };
+
+    const questions = await Question.find(query);
+
+    return NextResponse.json({ success: true, questions });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Something went wrong" },
+      { status: 500 }
+    );
   }
-    
+}
+
   
