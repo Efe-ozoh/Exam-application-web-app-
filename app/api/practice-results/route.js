@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 
-import connectDB from "@/lib/mongoose";
-import PracticeResult from "@/lib/models/practice-result.schema";
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_SUBJECTS = 12;
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
+const TABLE = "practice_results";
 
 async function getCurrentUser() {
   const supabase = await createClient();
@@ -14,7 +13,7 @@ async function getCurrentUser() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return user;
+  return { supabase, user };
 }
 
 function toFiniteNumber(value) {
@@ -24,22 +23,22 @@ function toFiniteNumber(value) {
 
 function serializeResult(item) {
   return {
-    id: String(item._id),
-    examType: item.examType,
+    id: item.id,
+    examType: item.exam_type || "Practice",
     year: item.year ?? null,
     subjects: Array.isArray(item.subjects) ? item.subjects : [],
     score: Number(item.score) || 0,
-    totalMarkingScore: Number(item.totalMarkingScore) || 0,
-    totalQuestions: Number(item.totalQuestions) || 0,
-    correctCount: Number(item.correctCount) || 0,
+    totalMarkingScore: Number(item.total_marking_score) || 0,
+    totalQuestions: Number(item.total_questions) || 0,
+    correctCount: Number(item.correct_count) || 0,
     percentage: Number(item.percentage) || 0,
-    createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : null,
+    createdAt: item.created_at ?? null,
   };
 }
 
 export async function POST(request) {
   try {
-    const user = await getCurrentUser();
+    const { supabase, user } = await getCurrentUser();
 
     if (!user) {
       return NextResponse.json(
@@ -138,23 +137,28 @@ export async function POST(request) {
       );
     }
 
-    await connectDB();
+    const { data, error } = await supabase
+      .from(TABLE)
+      .insert({
+        user_id: user.id,
+        exam_type: examType,
+        year,
+        subjects,
+        score: Math.max(0, Math.round(score)),
+        total_marking_score: Math.max(0, Math.round(totalMarkingScore)),
+        total_questions: totalQuestions,
+        correct_count: correctCount,
+        percentage: Math.min(100, Math.max(0, Math.round(percentage * 10) / 10)),
+      })
+      .select()
+      .single();
 
-    const saved = await PracticeResult.create({
-      userId: user.id,
-      userEmail: user.email ?? null,
-      examType,
-      year,
-      subjects,
-      score: Math.max(0, Math.round(score)),
-      totalMarkingScore: Math.max(0, Math.round(totalMarkingScore)),
-      totalQuestions,
-      correctCount,
-      percentage: Math.min(100, Math.max(0, Math.round(percentage * 10) / 10)),
-    });
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json(
-      { success: true, result: serializeResult(saved) },
+      { success: true, result: serializeResult(data) },
       { status: 201 }
     );
   } catch (error) {
@@ -169,7 +173,7 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    const user = await getCurrentUser();
+    const { supabase, user } = await getCurrentUser();
 
     if (!user) {
       return NextResponse.json(
@@ -184,16 +188,20 @@ export async function GET(request) {
       ? Math.min(MAX_LIMIT, Math.max(1, Math.floor(requestedLimit)))
       : DEFAULT_LIMIT;
 
-    await connectDB();
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(limit);
 
-    const results = await PracticeResult.find({ userId: user.id })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean();
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json({
       success: true,
-      results: results.map(serializeResult),
+      results: (data ?? []).map(serializeResult),
     });
   } catch (error) {
     console.error("Practice result GET error:", error);

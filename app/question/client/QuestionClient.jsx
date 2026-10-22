@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react"
+import Link from "next/link"
 
 import useQuestion from "@/hooks/useQuestion";
 import Timer from "@/components/question/timer";
@@ -14,12 +15,34 @@ import QuestionPageSkeleton from "@/components/skeletons/question";
 import QuestionNavigator from "@/components/question/questionNavigator"
 import { NextButton, BackButton, SubmitButton } from "@/components/question/questionButtons";
 
+const primaryLinkClasses =
+  "inline-flex items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
+
+const secondaryLinkClasses =
+  "inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
+
+const QuestionState = ({ title, message, role, children }) => (
+  <div className="min-h-screen bg-gray-50 px-4 py-10">
+    <div
+      className="mx-auto mt-16 max-w-lg rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm"
+      role={role}
+    >
+      <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+      <p className="mt-2 text-sm text-gray-600">{message}</p>
+      <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        {children}
+      </div>
+    </div>
+  </div>
+);
+
 const QuestionClient = () => {
   const {
     // actions
     handleSelect,
     nextQuestion,
     prevQuestion,
+    reloadQuestions,
     submit,
     displayScoreModal,
     questionNavigator,
@@ -32,12 +55,44 @@ const QuestionClient = () => {
     result,
     showScoreModal,
     submitted,
+    isLoading,
+    loadError,
 
   } = useQuestion();
 
-  if (!currentQuestion) {
+  if (isLoading) {
     return (
       <QuestionPageSkeleton />
+    );
+  }
+
+  if (loadError) {
+    return (
+      <QuestionState
+        title="Unable to load questions"
+        message={loadError}
+        role="alert"
+      >
+        <button type="button" onClick={reloadQuestions} className={primaryLinkClasses}>
+          Retry
+        </button>
+        <Link href="/exam_option" className={secondaryLinkClasses}>
+          Change selection
+        </Link>
+      </QuestionState>
+    );
+  }
+
+  if (!currentQuestion) {
+    return (
+      <QuestionState
+        title="No questions available"
+        message="We couldn't find questions for this exam, year, and subject combination. Choose another selection to continue."
+      >
+        <Link href="/exam_option" className={primaryLinkClasses}>
+          Choose another exam
+        </Link>
+      </QuestionState>
     );
   }
 

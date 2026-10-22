@@ -10,7 +10,7 @@ import ExamCard from "@/components/exams/Card";
 
  const Exams = () => {
   return (
-    <Box sx={{ backgroundColor: "#f7f7f7", minHeight: "100vh", p: 3 }}>
+    <Box className="min-h-screen bg-gray-50 p-3">
       <Typography className="text-blue-700" variant="h4" sx={{fontWeight: 700, mb: 1 }}>
         Jamb Subjects
       </Typography>

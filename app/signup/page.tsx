@@ -18,7 +18,11 @@ import {
   GoogleSignInButton,
 } from "@/components/auth/AuthFormControls";
 import { AuthPageShell } from "@/components/auth/AuthPageShell";
-import { EmailField, PasswordField } from "@/components/auth/AuthFields";
+import {
+  EmailField,
+  NameField,
+  PasswordField,
+} from "@/components/auth/AuthFields";
 import {
   MIN_PASSWORD_LENGTH,
   sanitizeNextPath,
@@ -26,6 +30,11 @@ import {
 
 const signupSchema = z
   .object({
+    fullName: z
+      .string()
+      .trim()
+      .min(2, "Please enter your full name.")
+      .max(80, "Name must be 80 characters or fewer."),
     email: z.string().email("Please enter a valid email address."),
     password: z
       .string()
@@ -55,6 +64,7 @@ function SignupForm() {
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
+      fullName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -67,6 +77,7 @@ function SignupForm() {
     setIsSubmitting(true);
 
     const formData = new FormData();
+    formData.set("fullName", values.fullName);
     formData.set("email", values.email);
     formData.set("password", values.password);
     formData.set("next", nextPath);
@@ -127,16 +138,17 @@ function SignupForm() {
 
   return (
     <AuthPageShell
-      columnClassName="lg:grid-cols-[0.95fr_1.05fr]"
-      glowClassName="bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.3),_transparent_40%)]"
       heroEyebrow="Join Us"
-      heroCaption="Academic Growth"
       heroTitle="Create your account."
       heroDescription="Unlock access to elite practice tools, exam resources, and learning experiences designed to keep you focused on excellence."
       sectionLabel="Member Signup"
       sectionTitle="Create account"
     >
       <form className="space-y-5" onSubmit={form.handleSubmit(handleSubmit)} noValidate>
+        <NameField
+          registration={form.register("fullName")}
+          error={form.formState.errors.fullName?.message}
+        />
         <EmailField
           registration={form.register("email")}
           error={form.formState.errors.email?.message}

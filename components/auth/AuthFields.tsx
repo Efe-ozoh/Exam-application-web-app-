@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { useState } from "react";
 import type { UseFormRegisterReturn } from "react-hook-form";
 
@@ -15,6 +15,29 @@ const inputClassName =
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="text-sm text-red-500">{message}</p>;
+}
+
+export function NameField({ registration, error }: AuthFieldProps) {
+  return (
+    <div className="space-y-2">
+      <label htmlFor="fullName" className="text-sm font-medium text-slate-700">
+        Full Name
+      </label>
+      <div className="relative">
+        <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <input
+          {...registration}
+          id="fullName"
+          type="text"
+          autoComplete="name"
+          placeholder="Enter your full name"
+          className={inputClassName}
+          aria-invalid={Boolean(error)}
+        />
+      </div>
+      <FieldError message={error} />
+    </div>
+  );
 }
 
 export function EmailField({ registration, error }: AuthFieldProps) {

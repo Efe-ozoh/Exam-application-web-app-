@@ -33,21 +33,30 @@ const useQuestion = () => {
   const [submitted, setSubmitted] = useState(false);
   const [showScoreModal, setShowScoreModal] = useState(false);
   const [result, setResult] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const savedResultRef = useRef(false);
 
   const currentQuestion = questions[index] ?? null;
 
   useEffect(() => {
+    let isActive = true;
+
+    setIsLoading(true);
+    setLoadError(null);
+
     const getQuestions = async () => {
       try {
         const response = await fetchQuestions(examType, year, subjects);
+        if (!isActive) return;
+
         const examQuestions = response?.questions;
-  
+
         if (!Array.isArray(examQuestions)) {
-          console.error("Questions must be an array");
-          return;
+          throw new Error("Unexpected response from the questions API");
         }
-  
+
         const formatted = examQuestions.map((q) => ({
           question: q.question,
           options: { A: q.options.A, B: q.options.B, C: q.options.C, D: q.options.D },
@@ -57,16 +66,28 @@ const useQuestion = () => {
           year: q.year ?? "Unknown",
           imgUrl: q.imgUrl ?? null,
         }));
-        
+
         setQuestions(formatted);
       } catch (error) {
+        if (!isActive) return;
+
         console.error("Error fetching questions:", error);
+        setQuestions([]);
+        setLoadError("We couldn't load the questions for this selection.");
+      } finally {
+        if (isActive) setIsLoading(false);
       }
     };
-  
+
     getQuestions();
-  }, [examType, year, subjectsParam]);
-  
+
+    return () => {
+      isActive = false;
+    };
+  }, [examType, year, subjectsParam, reloadKey]);
+
+  const reloadQuestions = () => setReloadKey((key) => key + 1);
+
   useEffect(() => {
     savedResultRef.current = false;
     setIndex(0);
@@ -146,6 +167,7 @@ const useQuestion = () => {
     handleSelect,
     nextQuestion,
     prevQuestion,
+    reloadQuestions,
     currentQuestion,
     submit,
     questionNavigator,
@@ -155,6 +177,8 @@ const useQuestion = () => {
     answers,
     submitted,
     result,
+    isLoading,
+    loadError,
   };
 };
 

@@ -76,10 +76,7 @@ export default function UpdatePasswordPage() {
 
   return (
     <AuthPageShell
-      columnClassName="lg:grid-cols-[1fr_1fr]"
-      glowClassName="bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.3),_transparent_40%)]"
       heroEyebrow="Security"
-      heroCaption="Password Update"
       heroTitle="Choose a new password."
       heroDescription="Pick a strong password you have not used before. You will use it the next time you sign in."
       sectionLabel="Account Security"

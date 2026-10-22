@@ -58,7 +58,21 @@ function readCredentials(formData: FormData) {
 
 export async function signUpAction(formData: FormData): Promise<AuthActionResult> {
   const { email, password } = readCredentials(formData);
+  const fullName = String(formData.get("fullName") ?? "")
+    .trim()
+    .replace(/\s+/g, " ");
   const next = sanitizeNextPath(String(formData.get("next") ?? "/"));
+
+  if (!fullName) {
+    return { success: false, error: "Please enter your full name." };
+  }
+
+  if (fullName.length < 2 || fullName.length > 80) {
+    return {
+      success: false,
+      error: "Name must be between 2 and 80 characters long.",
+    };
+  }
 
   if (!email || !password) {
     return { success: false, error: "Email and password are required." };
@@ -82,6 +96,9 @@ export async function signUpAction(formData: FormData): Promise<AuthActionResult
     password,
     options: {
       emailRedirectTo: `${getSiteUrl()}/auth/callback?next=${encodeURIComponent(next)}`,
+      data: {
+        full_name: fullName,
+      },
     },
   });
 

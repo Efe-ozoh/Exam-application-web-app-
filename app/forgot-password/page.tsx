@@ -60,10 +60,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthPageShell
-      columnClassName="lg:grid-cols-[1fr_1fr]"
-      glowClassName="bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.3),_transparent_40%)]"
       heroEyebrow="Recovery"
-      heroCaption="Account Access"
       heroTitle="Reset your password."
       heroDescription="Enter the email address linked to your account and we will send you a secure link to choose a new password."
       sectionLabel="Password Reset"

@@ -1,11 +1,5 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URL;
-
-if (!MONGODB_URI) {
-  throw new Error("Please define MONGODB_URL in .env.local");
-}
-
 let cached = global.mongoose;
 
 if (!cached) {
@@ -18,14 +12,28 @@ export default async function connectDB() {
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose
-      .connect(MONGODB_URI, {
-        bufferCommands: false,
-        serverSelectionTimeoutMS: 30000,
-      })
-      .then((mongoose) => mongoose);
+    const uri = process.env.MONGODB_URL;
+
+    if (!uri) {
+      throw new Error("Please define MONGODB_URL in .env.local");
+    }
+
+    cached.promise = mongoose.connect(uri, {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 30000,
+    });
   }
 
-  cached.conn = await cached.promise;
+  try {
+    cached.conn = await cached.promise;
+  } catch (error) {
+    // A rejected promise must not stay cached, otherwise one transient
+    // failure (DNS hiccup, paused cluster) breaks every later request until
+    // the server restarts.
+    cached.promise = null;
+    cached.conn = null;
+    throw error;
+  }
+
   return cached.conn;
 }

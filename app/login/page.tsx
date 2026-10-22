@@ -107,10 +107,7 @@ function LoginForm() {
 
   return (
     <AuthPageShell
-      columnClassName="lg:grid-cols-[1.1fr_0.9fr]"
-      glowClassName="bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.3),_transparent_45%)]"
       heroEyebrow="Excellence"
-      heroCaption="Education"
       heroTitle="Welcome back."
       heroDescription="Continue your academic journey with smart tools, personalized guidance, and access to your learning dashboard."
       sectionLabel="Access Portal"

@@ -46,7 +46,7 @@ export default function Sidebar() {
               alt="Eduliver logo"
               width={48}
               height={48}
-              className="h-12 w-12 object-contain"
+              className="h-12 w-12 rounded-xl bg-[#ffffff] object-contain p-0.5"
             />
           </Link>
 
@@ -97,15 +97,17 @@ export default function Sidebar() {
               </>
             )}
 
-            <button
-              type="button"
-              onClick={() => setOpen((previous) => !previous)}
-              aria-label="Open menu"
-              aria-expanded={open}
-              className="inline-flex items-center justify-center rounded-lg p-2.5 text-blue-700 transition hover:bg-blue-50 md:hidden"
-            >
-              <MenuIcon />
-            </button>
+            {user && (
+              <button
+                type="button"
+                onClick={() => setOpen((previous) => !previous)}
+                aria-label="Open menu"
+                aria-expanded={open}
+                className="inline-flex items-center justify-center rounded-lg p-2.5 text-blue-700 transition hover:bg-blue-50 md:hidden"
+              >
+                <MenuIcon />
+              </button>
+            )}
           </div>
         </div>
       </header>

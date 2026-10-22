@@ -10,6 +10,8 @@ import ArticleIcon from "@mui/icons-material/Article";
 import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
 import CloseIcon from "@mui/icons-material/Close";
 
+import ThemeToggle from "./ThemeToggle";
+
 // Auth screens should not offer a sign-out action.
 const AUTH_ROUTES = [
   "/login",
@@ -88,6 +90,10 @@ const Sidedrawer = ({ open, user, isLoading, onClose }) => {
           </>
         )}
       </nav>
+
+      <div className="px-4 pb-4">
+        <ThemeToggle showLabel />
+      </div>
 
       {!isLoading && (
         <div className="px-4 pb-6">

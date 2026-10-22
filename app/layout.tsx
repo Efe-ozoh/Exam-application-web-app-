@@ -17,18 +17,32 @@ export const metadata: Metadata = {
   description: "Your UTME Success Hub",
 };
 
+const themeScript = `
+(function () {
+  try {
+    var stored = localStorage.getItem("eduliver-theme");
+    var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var isDark = stored ? stored === "dark" : prefersDark;
+    document.documentElement.classList.toggle("dark", isDark);
+  } catch (error) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="antialiased transition-colors duration-200">
         <MathJaxContext config={config}>
           <Sidebar />
 
-          <main className="w-full">{children}</main>
+          <div className="w-full">{children}</div>
         </MathJaxContext>
       </body>
     </html>
