@@ -110,7 +110,6 @@ function LoginForm() {
       heroEyebrow="Excellence"
       heroTitle="Welcome back."
       heroDescription="Continue your academic journey with smart tools, personalized guidance, and access to your learning dashboard."
-      sectionLabel="Access Portal"
       sectionTitle="Sign in"
     >
       <form className="space-y-5" onSubmit={form.handleSubmit(handleSubmit)} noValidate>

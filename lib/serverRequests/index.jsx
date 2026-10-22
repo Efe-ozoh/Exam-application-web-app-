@@ -22,6 +22,9 @@ export const fetchQuestions = async (examType, year, subjects) => {
 export const savePracticeResult = async (payload) => {
   const res = await fetch("/api/practice-results", {
     method: "POST",
+    // The API authenticates with Supabase's same-origin auth cookies. Be
+    // explicit so proxies/browsers that default to `omit` do not drop them.
+    credentials: "same-origin",
     headers: {
       "Content-Type": "application/json",
     },
@@ -31,7 +34,11 @@ export const savePracticeResult = async (payload) => {
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new Error(data?.message || "Failed to save practice result");
+    const error = new Error(
+      data?.message || "Failed to save practice result",
+    );
+    error.status = res.status;
+    throw error;
   }
 
   return data;

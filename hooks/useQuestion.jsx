@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { fetchQuestions, savePracticeResult } from "@/lib/serverRequests/index";
+import { createClient } from "@/lib/supabase/client";
 import { calculateScore } from "@/utils/scoreCalculator";
 
 const useQuestion = () => {
@@ -35,6 +36,7 @@ const useQuestion = () => {
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
+  const [saveError, setSaveError] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
   const savedResultRef = useRef(false);
 
@@ -58,6 +60,7 @@ const useQuestion = () => {
         }
 
         const formatted = examQuestions.map((q) => ({
+          id: q._id ? String(q._id) : null,
           question: q.question,
           options: { A: q.options.A, B: q.options.B, C: q.options.C, D: q.options.D },
           answer: q.answer?.toUpperCase() ?? null,
@@ -95,6 +98,7 @@ const useQuestion = () => {
     setSubmitted(false);
     setShowScoreModal(false);
     setResult(null);
+    setSaveError(null);
   }, [examType, year, subjectsParam]);
   
 
@@ -129,22 +133,46 @@ const useQuestion = () => {
     if (!nextResult || savedResultRef.current) return;
 
     savedResultRef.current = true;
+    setSaveError(null);
 
     try {
+      // A practice can run longer than the access token's lifetime. Reading
+      // the session here lets the browser client refresh the auth cookies
+      // before the API request, so the server sees the current session.
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        savedResultRef.current = false;
+        setSaveError(
+          "Your session has expired. Please sign in again to save this result.",
+        );
+        return;
+      }
+
       await savePracticeResult({
         examType: examType || "Practice",
         year: year ? Number(year) : null,
         subjects,
-        score: nextResult.score,
-        totalMarkingScore: nextResult.totalMarkingScore,
-        totalQuestions: nextResult.total,
-        correctCount: nextResult.breakdown.filter((item) => item.isCorrect)
-          .length,
-        percentage: nextResult.percentage,
+        answers: questions.map((question, questionIndex) => ({
+          questionId: question.id,
+          answer:
+            typeof answers[questionIndex] === "string"
+              ? answers[questionIndex]
+              : "",
+        })),
       });
     } catch (error) {
       // Let the dashboard retry if the save failed (offline, session expired).
       savedResultRef.current = false;
+      setSaveError(
+        error?.status === 401
+          ? "Your session has expired. Please sign in again to save this result."
+          : error?.message ||
+              "We couldn't save your result. Please try again.",
+      );
       console.error("Failed to save practice result:", error);
     }
   };
@@ -179,6 +207,7 @@ const useQuestion = () => {
     result,
     isLoading,
     loadError,
+    saveError,
   };
 };
 

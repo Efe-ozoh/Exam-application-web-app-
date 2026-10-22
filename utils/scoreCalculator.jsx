@@ -1,5 +1,10 @@
 import jambScoreCalculator from "./jambScoreCalculator";
 
+const roundTo = (value, digits) => {
+  const factor = 10 ** digits;
+  return Math.round((Number(value) || 0) * factor) / factor;
+};
+
 export const calculateScore = (userAnswers = [], questions = []) => {
   if (!Array.isArray(questions) || questions.length === 0) {
     return {
@@ -8,12 +13,14 @@ export const calculateScore = (userAnswers = [], questions = []) => {
       totalMarkingScore: 0,
       percentage: 0,
       breakdown: [],
+      subjectScores: [],
     };
   }
 
   let score = 0;
   let totalMarkingScore = 0;
   const total = questions.length;
+  const subjectTotals = new Map();
 
   const breakdown = questions.map((q, index) => {
     const userAnswer =
@@ -30,18 +37,38 @@ export const calculateScore = (userAnswers = [], questions = []) => {
     const subject = q.subject;
     const exam = q.exam;
 
+    const markWeight =
+      exam === "JAMB" ? jambScoreCalculator(examYear, subject) : 1;
+
     const isCorrect =
       userAnswer !== "" &&
       correctAnswer !== "" &&
       userAnswer === correctAnswer;
 
-    if (isCorrect && exam === "JAMB") {
-      score += jambScoreCalculator(examYear, subject);
-      totalMarkingScore = 400;
-    } else if (isCorrect && exam !== "JAMB") {
-      score += 1;
-      totalMarkingScore = 50;
+    if (isCorrect) {
+      score += markWeight;
+      totalMarkingScore = exam === "JAMB" ? 400 : 50;
     }
+
+    const subjectLabel = typeof subject === "string" ? subject.trim() : "";
+    const subjectKey = subjectLabel.toLowerCase() || "unspecified";
+    const subjectTotal = subjectTotals.get(subjectKey) ?? {
+      subject: subjectLabel || "Unspecified",
+      score: 0,
+      maxScore: 0,
+      correctCount: 0,
+      totalQuestions: 0,
+    };
+
+    subjectTotal.maxScore += markWeight;
+    subjectTotal.totalQuestions += 1;
+
+    if (isCorrect) {
+      subjectTotal.score += markWeight;
+      subjectTotal.correctCount += 1;
+    }
+
+    subjectTotals.set(subjectKey, subjectTotal);
 
     return {
       question: q.question,
@@ -49,11 +76,23 @@ export const calculateScore = (userAnswers = [], questions = []) => {
       userAnswer: userAnswer || null,
       correctAnswer: correctAnswer || null,
       isCorrect,
+      subject: subjectLabel || null,
+      markWeight,
     };
   });
 
   const totalExamScore = Math.floor(Math.round(score));
   const percentage = totalMarkingScore > 0 ? (score / totalMarkingScore) * 100 : 0;
+
+  const subjectScores = Array.from(subjectTotals.values()).map((item) => ({
+    subject: item.subject,
+    score: roundTo(item.score, 2),
+    maxScore: roundTo(item.maxScore, 2),
+    correctCount: item.correctCount,
+    totalQuestions: item.totalQuestions,
+    percentage:
+      item.maxScore > 0 ? roundTo((item.score / item.maxScore) * 100, 1) : 0,
+  }));
 
   return {
     score: totalExamScore,
@@ -61,5 +100,6 @@ export const calculateScore = (userAnswers = [], questions = []) => {
     totalMarkingScore,
     percentage,
     breakdown,
+    subjectScores,
   };
 };

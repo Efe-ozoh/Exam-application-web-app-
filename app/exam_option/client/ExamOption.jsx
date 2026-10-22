@@ -9,25 +9,15 @@ import PreviewChips from "@/components/examOption/PreviewChips";
 import ActionRow from "@/components/examOption/ActionRow";
 import ExamTypeChips from "@/components/examOption/ExamTypeChips";
 import ExamMode from "@/components/examOption/ExamMode";
+import {
+  SUPPORTED_SUBJECTS,
+  getMaxSubjectsForExamType,
+} from "@/lib/practice/constants";
 
 
 const ExamOptions = () => {
 
-  const subjects = [
-    "English",
-    "Mathematics",
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "Economics",
-    "Government",
-    "Literature-in-English",
-    "CRK",
-    "Geography",
-    "Agricultural Science",
-    "Financial-Accounting",
-    "Commerce",
-  ]
+  const subjects = SUPPORTED_SUBJECTS;
 
   const router = useRouter();
 
@@ -36,7 +26,10 @@ const ExamOptions = () => {
   const [year, setYear] = useState(2024);
   const [selected, setSelected] = useState([]);
 
-  const maxAllowed = useMemo(() => (examType === "JAMB" || examType === "POST-UTME" ? 4 : 1), [examType]);
+  const maxAllowed = useMemo(
+    () => getMaxSubjectsForExamType(examType),
+    [examType]
+  );
 
   const toggleSubject = (subject) => {
     setSelected((prev) => {

@@ -21,8 +21,7 @@ const themeScript = `
 (function () {
   try {
     var stored = localStorage.getItem("eduliver-theme");
-    var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    var isDark = stored ? stored === "dark" : prefersDark;
+    var isDark = stored === "dark";
     document.documentElement.classList.toggle("dark", isDark);
   } catch (error) {}
 })();

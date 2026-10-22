@@ -1,7 +1,9 @@
 import React from "react";
 
+import { SUPPORTED_EXAM_TYPES } from "@/lib/practice/constants";
+
 export default function ExamTypeChips({ value, onChange }) {
-  const examOptions = ["JAMB", "WAEC", "NECO"];
+  const examOptions = SUPPORTED_EXAM_TYPES;
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700">Exam Type</label>

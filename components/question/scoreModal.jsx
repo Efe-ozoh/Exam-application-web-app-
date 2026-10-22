@@ -5,6 +5,7 @@ const ScoreModal = ({
     open,
     onClose,
     result,
+    saveError,
   }) => {
     
   
@@ -41,9 +42,16 @@ const ScoreModal = ({
           <p className="text-gray-600 text-sm md:text-base text-center">
             Your Estimated scored is <span className="font-semibold text-blue-600">{result.score}</span>
           </p>
-  
-        
-  
+
+          {saveError && (
+            <p
+              role="alert"
+              className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+            >
+              {saveError}
+            </p>
+          )}
+
           {/* Buttons */}
           <div className="mt-8 flex flex-col md:flex-row gap-4">
             <button

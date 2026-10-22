@@ -141,7 +141,6 @@ function SignupForm() {
       heroEyebrow="Join Us"
       heroTitle="Create your account."
       heroDescription="Unlock access to elite practice tools, exam resources, and learning experiences designed to keep you focused on excellence."
-      sectionLabel="Member Signup"
       sectionTitle="Create account"
     >
       <form className="space-y-5" onSubmit={form.handleSubmit(handleSubmit)} noValidate>

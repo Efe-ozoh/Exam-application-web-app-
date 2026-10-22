@@ -57,6 +57,7 @@ const QuestionClient = () => {
     submitted,
     isLoading,
     loadError,
+    saveError,
 
   } = useQuestion();
 
@@ -160,7 +161,11 @@ const QuestionClient = () => {
         />
         
         {/* exam score */}
-          <ScoreModal open={showScoreModal} onClose={displayScoreModal} result={result}
+          <ScoreModal
+            open={showScoreModal}
+            onClose={displayScoreModal}
+            result={result}
+            saveError={saveError}
           />
       </div>
     </div>
