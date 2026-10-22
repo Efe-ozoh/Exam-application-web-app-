@@ -79,7 +79,6 @@ export default function UpdatePasswordPage() {
       heroEyebrow="Security"
       heroTitle="Choose a new password."
       heroDescription="Pick a strong password you have not used before. You will use it the next time you sign in."
-      sectionLabel="Account Security"
       sectionTitle="Update password"
     >
       <form className="space-y-5" onSubmit={form.handleSubmit(handleSubmit)} noValidate>

@@ -63,7 +63,6 @@ export default function ForgotPasswordPage() {
       heroEyebrow="Recovery"
       heroTitle="Reset your password."
       heroDescription="Enter the email address linked to your account and we will send you a secure link to choose a new password."
-      sectionLabel="Password Reset"
       sectionTitle="Forgot password"
     >
       <form className="space-y-5" onSubmit={form.handleSubmit(handleSubmit)} noValidate>
