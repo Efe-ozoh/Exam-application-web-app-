@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import HomeIcon from "@mui/icons-material/Home";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
-import ArticleIcon from "@mui/icons-material/Article";
 import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -67,18 +66,11 @@ const Sidedrawer = ({ open, user, isLoading, onClose }) => {
               <DashboardIcon /> Dashboard
             </Link>
             <Link
-              href="/exams"
+              href="/exam_option"
               onClick={handleNavigate}
               className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition"
             >
               <MenuBookOutlinedIcon /> Practice
-            </Link>
-            <Link
-              href="/news"
-              onClick={handleNavigate}
-              className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition"
-            >
-              <ArticleIcon /> Education News
             </Link>
             <Link
               href="/past_questions"

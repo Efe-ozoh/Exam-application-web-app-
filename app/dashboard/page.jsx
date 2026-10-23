@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import RetryButton from "@/components/dashboard/RetryButton";
-import { formatMarks, normalizeSubjectScores } from "@/lib/practice/results";
+import PracticeHistoryError from "@/components/dashboard/PracticeHistoryError";
+import RecentPracticeScores from "@/components/dashboard/RecentPracticeScores";
+import StatCard from "@/components/dashboard/StatCard";
+import {
+  ClipboardIcon,
+  PlayIcon,
+  TrendingIcon,
+  TrophyIcon,
+} from "@/components/dashboard/DashboardIcons";
+import { clampPercentage, normalizeSubjectScores } from "@/lib/practice/results";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -11,151 +19,12 @@ export const metadata = {
   title: "Dashboard | Eduliver",
 };
 
-const dateFormatter = new Intl.DateTimeFormat("en-NG", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "Africa/Lagos",
-});
-
-function clampPercentage(value) {
-  return Math.min(100, Math.max(0, Number(value) || 0));
-}
-
-function formatDate(value) {
-  if (!value) return "";
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "" : dateFormatter.format(date);
-}
-
 function getDisplayName(user) {
   return (
     user.user_metadata?.full_name ||
     user.user_metadata?.name ||
     user.email?.split("@")[0] ||
     "Student"
-  );
-}
-
-function getSubjectsLabel(subjects) {
-  return subjects.length ? subjects.join(", ") : "All subjects";
-}
-
-function TrendingIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-4 w-4"
-    >
-      <path d="M22 7 13.5 15.5 8.5 10.5 2 17" />
-      <path d="M16 7h6v6" />
-    </svg>
-  );
-}
-
-function TrophyIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-4 w-4"
-    >
-      <path d="M6 4h12v5a6 6 0 0 1-12 0z" />
-      <path d="M6 6H4a2 2 0 0 0 2 4" />
-      <path d="M18 6h2a2 2 0 0 1-2 4" />
-      <path d="M12 15v4" />
-      <path d="M8 21h8" />
-    </svg>
-  );
-}
-
-function ClipboardIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-4 w-4"
-    >
-      <rect x="8" y="2" width="8" height="4" rx="1" />
-      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-      <path d="m9 14 2 2 4-4" />
-    </svg>
-  );
-}
-
-function PlayIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-4 w-4"
-    >
-      <path d="m7 4 13 8-13 8z" />
-    </svg>
-  );
-}
-
-function ChevronIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="disclosure-chevron h-4 w-4 transition-transform duration-150"
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
-
-function StatCard({ label, value, hint, icon, unavailable = false }) {
-  return (
-    <div className="min-w-0 rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
-          {icon}
-        </span>
-        <p className="truncate text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
-          {label}
-        </p>
-      </div>
-      <p className="mt-3 text-3xl font-bold text-slate-900">{value}</p>
-      <p
-        className={`mt-1 text-sm ${
-          unavailable ? "text-slate-400" : "text-slate-500"
-        }`}
-      >
-        {hint}
-      </p>
-    </div>
   );
 }
 
@@ -175,7 +44,8 @@ export default async function DashboardPage() {
   let loadError = false;
 
   try {
-    // User practice history lives in Supabase. MongoDB stores questions only.
+    // Practice history is user data and lives in Supabase. Load the newest
+    // page, the total count, and the best percentage in parallel.
     const [resultsResponse, countResponse, bestResponse] = await Promise.all([
       supabase
         .from("practice_results")
@@ -205,6 +75,8 @@ export default async function DashboardPage() {
 
     const results = resultsResponse.data ?? [];
 
+    // Normalize database rows once so the presentational components only deal
+    // with the camelCase, numeric shape used by the dashboard.
     recentResults = results.map((item) => ({
       id: item.id,
       examType: item.exam_type || "Practice",
@@ -231,7 +103,11 @@ export default async function DashboardPage() {
   const hasHistory = !loadError && totalPractices > 0;
   const latest = recentResults[0] ?? null;
 
-  const latestValue = loadError ? "—" : latest ? `${Math.round(latest.percentage)}%` : "0%";
+  const latestValue = loadError
+    ? "—"
+    : latest
+      ? `${Math.round(latest.percentage)}%`
+      : "0%";
   const latestHint = loadError
     ? "Unavailable right now"
     : latest
@@ -306,225 +182,9 @@ export default async function DashboardPage() {
         </section>
 
         {loadError ? (
-          <section
-            role="alert"
-            className="mt-6 rounded-2xl border border-blue-100 bg-white p-6 shadow-sm sm:p-8"
-          >
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-5 w-5"
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 8v5" />
-                  <path d="M12 16h.01" />
-                </svg>
-              </span>
-
-              <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-slate-900">
-                  We couldn&apos;t load your practice history
-                </h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  This is usually a temporary connection problem. Retry in a
-                  moment, and your scores will appear here.
-                </p>
-                <RetryButton />
-              </div>
-            </div>
-          </section>
+          <PracticeHistoryError />
         ) : (
-          <section
-            aria-labelledby="recent-scores-heading"
-            className="mt-6 rounded-2xl border border-blue-100 bg-white p-5 shadow-sm sm:p-6"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2
-                id="recent-scores-heading"
-                className="text-lg font-semibold text-slate-900"
-              >
-                Recent practice scores
-              </h2>
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
-                {recentResults.length
-                  ? `Last ${recentResults.length} attempt${
-                      recentResults.length === 1 ? "" : "s"
-                    }`
-                  : "No attempts yet"}
-              </span>
-            </div>
-
-            {recentResults.length === 0 ? (
-              <div className="mt-5 rounded-xl border border-dashed border-blue-200 bg-blue-50 p-6 text-center sm:p-8">
-                <h3 className="text-base font-semibold text-slate-900">
-                  Your practice history starts here
-                </h3>
-                <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
-                  Pick a subject and complete a practice session. Your score
-                  will appear here so you can track your progress.
-                </p>
-                <Link
-                  href="/exam_option"
-                  className="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
-                >
-                  <PlayIcon />
-                  Choose a subject
-                </Link>
-              </div>
-            ) : (
-              <ul className="mt-2 divide-y divide-blue-50">
-                {recentResults.map((item) => {
-                  const subjectsLabel = getSubjectsLabel(item.subjects);
-                  const examLabel = `${item.examType}${
-                    item.year ? ` · ${item.year}` : ""
-                  }`;
-
-                  return (
-                    <li key={item.id} className="py-5">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate font-semibold text-slate-900">
-                            {examLabel}
-                          </p>
-                          <p
-                            className="mt-1 truncate text-sm text-slate-500"
-                            title={subjectsLabel}
-                          >
-                            {subjectsLabel}
-                          </p>
-                          <p className="mt-1 text-xs text-slate-500">
-                            {formatDate(item.createdAt)}
-                          </p>
-                        </div>
-
-                        <div className="flex shrink-0 items-baseline justify-between gap-3 sm:flex-col sm:items-end sm:gap-0 sm:text-right">
-                          <p className="text-xl font-bold text-blue-700">
-                            {Math.round(item.percentage)}%
-                          </p>
-                          <p className="whitespace-nowrap text-xs text-slate-500">
-                            {item.score}
-                            {item.totalMarkingScore > 0
-                              ? ` / ${item.totalMarkingScore}`
-                              : ""}{" "}
-                            marks
-                          </p>
-                        </div>
-                      </div>
-
-                      <div
-                        role="progressbar"
-                        aria-label={`Score for ${examLabel}`}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-valuenow={Math.round(item.percentage)}
-                        className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-blue-50"
-                      >
-                        <div
-                          className="h-full rounded-full bg-blue-600"
-                          style={{ width: `${item.percentage}%` }}
-                        />
-                      </div>
-
-                      <details className="result-disclosure mt-3">
-                        <summary className="inline-flex cursor-pointer select-none items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2">
-                          View result
-                          <ChevronIcon />
-                        </summary>
-
-                        <div className="mt-3 grid gap-4 rounded-xl bg-blue-50/70 p-4 sm:grid-cols-3">
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                              Correct answers
-                            </p>
-                            <p className="mt-1 text-sm font-semibold text-slate-900">
-                              {item.correctCount} of {item.totalQuestions}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                              Marks
-                            </p>
-                            <p className="mt-1 text-sm font-semibold text-slate-900">
-                              {item.score}
-                              {item.totalMarkingScore > 0
-                                ? ` / ${item.totalMarkingScore}`
-                                : ""}{" "}
-                              marks
-                            </p>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                              Subjects
-                            </p>
-                            <p className="mt-1 break-words text-sm font-semibold text-slate-900">
-                              {subjectsLabel}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 rounded-xl bg-blue-50/70 p-4">
-                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                            Subject performance
-                          </p>
-
-                          {item.subjectScores.length > 0 ? (
-                            <ul className="mt-3 space-y-4">
-                              {item.subjectScores.map((subject) => (
-                                <li key={subject.subject}>
-                                  <div className="flex items-baseline justify-between gap-3">
-                                    <p
-                                      className="min-w-0 truncate text-sm font-semibold text-slate-900"
-                                      title={subject.subject}
-                                    >
-                                      {subject.subject}
-                                    </p>
-                                    <p className="shrink-0 text-sm font-bold text-blue-700">
-                                      {Math.round(subject.percentage)}%
-                                    </p>
-                                  </div>
-                                  <p className="mt-0.5 text-xs text-slate-500">
-                                    {formatMarks(subject.score)} /{" "}
-                                    {formatMarks(subject.maxScore)} marks ·{" "}
-                                    {subject.correctCount} / {subject.totalQuestions}{" "}
-                                    correct
-                                  </p>
-                                  <div
-                                    role="progressbar"
-                                    aria-label={`Score for ${subject.subject}`}
-                                    aria-valuemin={0}
-                                    aria-valuemax={100}
-                                    aria-valuenow={Math.round(subject.percentage)}
-                                    className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-blue-100"
-                                  >
-                                    <div
-                                      className="h-full rounded-full bg-blue-600"
-                                      style={{ width: `${subject.percentage}%` }}
-                                    />
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="mt-2 text-xs text-slate-500">
-                              Subject breakdown was not recorded for this earlier
-                              attempt.
-                            </p>
-                          )}
-                        </div>
-                      </details>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
+          <RecentPracticeScores results={recentResults} />
         )}
       </div>
     </main>

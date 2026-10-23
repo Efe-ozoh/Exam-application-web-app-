@@ -156,6 +156,8 @@ const useQuestion = () => {
         examType: examType || "Practice",
         year: year ? Number(year) : null,
         subjects,
+        // Send the question IDs and the student's choices. The API uses the
+        // IDs to fetch trusted question/answer data and recalculate the score.
         answers: questions.map((question, questionIndex) => ({
           questionId: question.id,
           answer:

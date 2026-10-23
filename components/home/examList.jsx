@@ -23,12 +23,6 @@ export const exams = [
 
   export const homeContent = [
       {
-          title: "Education News",
-          description: "Get updated on the latest Education News from all Institutions across the Nation",
-          image: "/assets/news.png",
-          url: "/news",
-      },
-      {
         title: "Past Questions",
         description: "Get free past questions so you can start smart and hard for your exams",
         image: "/assets/books.png",

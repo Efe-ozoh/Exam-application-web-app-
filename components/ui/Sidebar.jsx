@@ -12,8 +12,7 @@ import UserAvatarMenu from "./UserAvatarMenu";
 
 const SIGNED_IN_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/exams", label: "Practice" },
-  { href: "/news", label: "News" },
+  { href: "/exam_option", label: "Practice" },
   { href: "/past_questions", label: "Past Questions" },
 ];
 

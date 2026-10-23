@@ -37,6 +37,9 @@ export const calculateScore = (userAnswers = [], questions = []) => {
     const subject = q.subject;
     const exam = q.exam;
 
+    // JAMB awards fractional marks per subject; other exams use one mark per
+    // correct answer. The same weight is used for both the overall score and
+    // the subject-level maximum.
     const markWeight =
       exam === "JAMB" ? jambScoreCalculator(examYear, subject) : 1;
 
@@ -50,6 +53,8 @@ export const calculateScore = (userAnswers = [], questions = []) => {
       totalMarkingScore = exam === "JAMB" ? 400 : 50;
     }
 
+    // Group every question under its subject. Case-insensitive keys prevent
+    // duplicate rows if the same subject is stored with different casing.
     const subjectLabel = typeof subject === "string" ? subject.trim() : "";
     const subjectKey = subjectLabel.toLowerCase() || "unspecified";
     const subjectTotal = subjectTotals.get(subjectKey) ?? {
@@ -84,6 +89,8 @@ export const calculateScore = (userAnswers = [], questions = []) => {
   const totalExamScore = Math.floor(Math.round(score));
   const percentage = totalMarkingScore > 0 ? (score / totalMarkingScore) * 100 : 0;
 
+  // Round only at the boundary so the saved JSON is readable without losing
+  // precision while the marks are being accumulated.
   const subjectScores = Array.from(subjectTotals.values()).map((item) => ({
     subject: item.subject,
     score: roundTo(item.score, 2),
