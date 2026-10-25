@@ -13,6 +13,7 @@ import UserAvatarMenu from "./UserAvatarMenu";
 const SIGNED_IN_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/exam_option", label: "Practice" },
+  { href: "/study-assistant", label: "AI Tutor" },
   { href: "/past_questions", label: "Past Questions" },
 ];
 

@@ -11,6 +11,7 @@ import ScoreModal from "@/components/question/scoreModal";
 import Header from "@/components/question/header";
 import Solution from "@/components/question/solutions";
 import CalculatorToggle from "@/components/question/calculatorToggle";
+import AskAi from "@/components/question/askAi";
 import QuestionPageSkeleton from "@/components/skeletons/question";
 import QuestionNavigator from "@/components/question/questionNavigator"
 import { NextButton, BackButton, SubmitButton } from "@/components/question/questionButtons";
@@ -36,7 +37,7 @@ const QuestionState = ({ title, message, role, children }) => (
   </div>
 );
 
-const QuestionClient = () => {
+const QuestionClient = ({ examMode, examSessionId, examStartError }) => {
   const {
     // actions
     handleSelect,
@@ -58,8 +59,24 @@ const QuestionClient = () => {
     isLoading,
     loadError,
     saveError,
+    isFormalExam,
+    isResultSaved,
 
-  } = useQuestion();
+  } = useQuestion({ examMode, examSessionId });
+
+  if (examStartError) {
+    return (
+      <QuestionState
+        title="Unable to start this examination"
+        message={examStartError}
+        role="alert"
+      >
+        <Link href="/exam_option" className={primaryLinkClasses}>
+          Choose another exam
+        </Link>
+      </QuestionState>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -106,7 +123,19 @@ const QuestionClient = () => {
       <div className="flex items-center justify-between w-full px-3 pb-4">
   
        {/* Calculator */}
-       <CalculatorToggle />
+       <div className="flex items-center">
+         <CalculatorToggle />
+         {isFormalExam && !isResultSaved ? (
+           <span className="ml-4 text-xs font-medium text-slate-500 sm:ml-8">
+             AI help unlocks after a successful submission
+           </span>
+         ) : (
+           <AskAi
+             question={currentQuestion}
+             selectedAnswer={answers[index]}
+           />
+         )}
+       </div>
 
         {/* Timer */}
       <Suspense fallback={ <QuestionPageSkeleton /> }>

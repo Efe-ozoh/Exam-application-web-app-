@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import AiTutorCard from "@/components/dashboard/AiTutorCard";
 import PracticeHistoryError from "@/components/dashboard/PracticeHistoryError";
 import RecentPracticeScores from "@/components/dashboard/RecentPracticeScores";
 import StatCard from "@/components/dashboard/StatCard";
@@ -10,6 +11,7 @@ import {
   TrendingIcon,
   TrophyIcon,
 } from "@/components/dashboard/DashboardIcons";
+import { getActiveExamSession } from "@/lib/exam/sessions";
 import { clampPercentage, normalizeSubjectScores } from "@/lib/practice/results";
 import { createClient } from "@/lib/supabase/server";
 
@@ -36,6 +38,20 @@ export default async function DashboardPage() {
 
   if (!user) {
     redirect("/login?next=/dashboard");
+  }
+
+  let aiTutorLocked = false;
+
+  try {
+    const activeExam = await getActiveExamSession(supabase, user.id);
+
+    if (activeExam.ok) {
+      aiTutorLocked = Boolean(activeExam.session);
+    } else if (!activeExam.missingMigration) {
+      console.error("Unable to load active exam status:", activeExam.message);
+    }
+  } catch (error) {
+    console.error("Unable to load active exam status:", error);
   }
 
   let recentResults = [];
@@ -180,6 +196,8 @@ export default async function DashboardPage() {
             unavailable={loadError}
           />
         </section>
+
+        <AiTutorCard locked={aiTutorLocked} />
 
         {loadError ? (
           <PracticeHistoryError />

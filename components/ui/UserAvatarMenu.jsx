@@ -98,6 +98,15 @@ export default function UserAvatarMenu({ user }) {
             Dashboard
           </Link>
 
+          <Link
+            href="/study-assistant"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-3 text-sm font-medium text-blue-700 transition hover:bg-blue-50"
+          >
+            AI Study Assistant
+          </Link>
+
           <form action="/auth/signout" method="post">
             <button
               type="submit"

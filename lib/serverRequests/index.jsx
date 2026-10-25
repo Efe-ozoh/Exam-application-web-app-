@@ -9,13 +9,20 @@ export const fetchQuestions = async (examType, year, subjects) => {
 
     const res = await fetch(`/api/questions?${params.toString()}`);
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const data = await res.json().catch(() => null);
+      const error = new Error(
+        data?.message || "We couldn't load the questions for this selection.",
+      );
+      error.status = res.status;
+      throw error;
+    }
 
     const data = await res.json();
     return data || null;
   } catch (error) {
     console.log(error);
-    return null;
+    throw error;
   }
 };
 
@@ -42,6 +49,61 @@ export const savePracticeResult = async (payload) => {
   }
 
   return data;
+};
+
+async function requestAiJson(url, options = {}) {
+  const res = await fetch(url, {
+    credentials: "same-origin",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const error = new Error(
+      data?.message || "The AI service is unavailable right now.",
+    );
+    error.status = res.status;
+    error.code = data?.code;
+    error.usage = data?.usage;
+    throw error;
+  }
+
+  return data;
+}
+
+export const fetchStudyAssistantUsage = async (options = {}) => {
+  return requestAiJson("/api/ai/study-assistant", {
+    method: "GET",
+    signal: options.signal,
+  });
+};
+
+export const sendStudyAssistantMessage = async (payload, options = {}) => {
+  return requestAiJson("/api/ai/study-assistant", {
+    method: "POST",
+    body: JSON.stringify(payload),
+    signal: options.signal,
+  });
+};
+
+export const fetchAskAiUsage = async (options = {}) => {
+  return requestAiJson("/api/ai/question-explanation", {
+    method: "GET",
+    signal: options.signal,
+  });
+};
+
+export const sendQuestionExplanation = async (payload, options = {}) => {
+  return requestAiJson("/api/ai/question-explanation", {
+    method: "POST",
+    body: JSON.stringify(payload),
+    signal: options.signal,
+  });
 };
 
 export const postQuestions = async (form) => {

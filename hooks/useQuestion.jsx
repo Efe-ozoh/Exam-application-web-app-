@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { fetchQuestions, savePracticeResult } from "@/lib/serverRequests/index";
+import { isFormalExamMode } from "@/lib/exam/constants";
 import { createClient } from "@/lib/supabase/client";
 import { calculateScore } from "@/utils/scoreCalculator";
 
-const useQuestion = () => {
+const useQuestion = ({ examMode = "", examSessionId = null } = {}) => {
   const searchParams = useSearchParams();
 
   const examType = searchParams?.get("examType") ?? "";
@@ -37,9 +38,11 @@ const useQuestion = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [saveError, setSaveError] = useState(null);
+  const [isResultSaved, setIsResultSaved] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const savedResultRef = useRef(false);
 
+  const isFormalExam = isFormalExamMode(examMode);
   const currentQuestion = questions[index] ?? null;
 
   useEffect(() => {
@@ -76,7 +79,9 @@ const useQuestion = () => {
 
         console.error("Error fetching questions:", error);
         setQuestions([]);
-        setLoadError("We couldn't load the questions for this selection.");
+        setLoadError(
+          error?.message || "We couldn't load the questions for this selection.",
+        );
       } finally {
         if (isActive) setIsLoading(false);
       }
@@ -99,6 +104,7 @@ const useQuestion = () => {
     setShowScoreModal(false);
     setResult(null);
     setSaveError(null);
+    setIsResultSaved(false);
   }, [examType, year, subjectsParam]);
   
 
@@ -133,6 +139,7 @@ const useQuestion = () => {
     if (!nextResult || savedResultRef.current) return;
 
     savedResultRef.current = true;
+    setIsResultSaved(false);
     setSaveError(null);
 
     try {
@@ -152,10 +159,12 @@ const useQuestion = () => {
         return;
       }
 
-      await savePracticeResult({
+      const saved = await savePracticeResult({
         examType: examType || "Practice",
         year: year ? Number(year) : null,
         subjects,
+        examMode: examMode || undefined,
+        ...(examSessionId ? { examSessionId } : {}),
         // Send the question IDs and the student's choices. The API uses the
         // IDs to fetch trusted question/answer data and recalculate the score.
         answers: questions.map((question, questionIndex) => ({
@@ -166,6 +175,18 @@ const useQuestion = () => {
               : "",
         })),
       });
+
+      // For a formal exam, the server confirms that the session was completed
+      // and linked to the saved result. AI must stay locked until then.
+      if (isFormalExam && saved?.examSessionCompleted !== true) {
+        savedResultRef.current = false;
+        setSaveError(
+          "Your result was saved, but the examination session could not be closed. AI help will stay locked until the examination is submitted successfully.",
+        );
+        return;
+      }
+
+      setIsResultSaved(true);
     } catch (error) {
       // Let the dashboard retry if the save failed (offline, session expired).
       savedResultRef.current = false;
@@ -210,6 +231,8 @@ const useQuestion = () => {
     isLoading,
     loadError,
     saveError,
+    isFormalExam,
+    isResultSaved,
   };
 };
 

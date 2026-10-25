@@ -5,6 +5,10 @@ import {
   ADMIN_COOKIE_NAME,
   isValidAdminSessionToken,
 } from "@/lib/auth/admin-session";
+import {
+  isJambExamType,
+  normalizeExamSubjects,
+} from "@/lib/practice/constants";
 
 const allowedAnswers = ["A", "B", "C", "D"];
 
@@ -102,6 +106,22 @@ export async function GET(req) {
       } catch {
         subjects = [];
       }
+    }
+
+    // Keep the JAMB combination authoritative on the server. Three old
+    // non-English subjects are normalized with English; any other invalid
+    // combination is rejected with a clear message.
+    if (isJambExamType(examType)) {
+      const normalized = normalizeExamSubjects(subjects, examType);
+
+      if (!normalized.ok) {
+        return NextResponse.json(
+          { success: false, message: normalized.message },
+          { status: 400 }
+        );
+      }
+
+      subjects = normalized.subjects;
     }
 
     const query = {};

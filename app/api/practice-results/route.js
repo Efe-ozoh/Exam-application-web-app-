@@ -3,12 +3,13 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import connectDB from "@/lib/mongoose";
 import Question from "@/lib/models/question.schema.jsx";
+import { EXAM_MODE_MOCK, normalizeExamMode } from "@/lib/exam/constants";
+import { completeActiveExamSession } from "@/lib/exam/sessions";
 import {
   MAX_ANSWERS,
-  getMaxSubjectsForExamType,
+  normalizeExamSubjects,
   normalizeSubjectKey,
   toSupportedExamType,
-  toSupportedSubject,
 } from "@/lib/practice/constants";
 import { normalizeSubjectScores } from "@/lib/practice/results";
 import { calculateScore } from "@/utils/scoreCalculator";
@@ -17,6 +18,8 @@ const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
 const TABLE = "practice_results";
 const OBJECT_ID_PATTERN = /^[a-f0-9]{24}$/i;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ALLOWED_ANSWERS = ["", "A", "B", "C", "D"];
 
 async function getCurrentUser() {
@@ -96,29 +99,51 @@ export async function POST(request) {
       return badRequest("At least one subject is required.");
     }
 
-    const selectedSubjects = [];
-    const selectedSubjectKeys = new Set();
+    // JAMB requires English plus exactly three other subjects. This is the
+    // authoritative check; the browser's subject selector is only guidance.
+    const normalizedSelection = normalizeExamSubjects(
+      body.subjects,
+      examType
+    );
 
-    for (const rawSubject of body.subjects) {
-      const subject = toSupportedSubject(rawSubject);
-
-      if (!subject) {
-        return badRequest("subjects contains an invalid subject.");
-      }
-
-      const key = normalizeSubjectKey(subject);
-
-      if (selectedSubjectKeys.has(key)) continue;
-
-      selectedSubjectKeys.add(key);
-      selectedSubjects.push(subject);
+    if (!normalizedSelection.ok) {
+      return badRequest(normalizedSelection.message);
     }
 
+    const selectedSubjects = normalizedSelection.subjects;
+    const selectedSubjectKeys = new Set(
+      selectedSubjects.map((subject) => normalizeSubjectKey(subject))
+    );
+
+    let examMode = null;
+
     if (
-      selectedSubjects.length === 0 ||
-      selectedSubjects.length > getMaxSubjectsForExamType(examType)
+      body.examMode !== undefined &&
+      body.examMode !== null &&
+      body.examMode !== ""
     ) {
-      return badRequest("subjects is invalid for this exam type.");
+      examMode = normalizeExamMode(body.examMode);
+
+      if (!examMode) {
+        return badRequest("examMode is invalid.");
+      }
+    }
+
+    let examSessionId = null;
+
+    if (
+      body.examSessionId !== undefined &&
+      body.examSessionId !== null &&
+      body.examSessionId !== ""
+    ) {
+      if (
+        typeof body.examSessionId !== "string" ||
+        !UUID_PATTERN.test(body.examSessionId.trim())
+      ) {
+        return badRequest("examSessionId is invalid.");
+      }
+
+      examSessionId = body.examSessionId.trim().toLowerCase();
     }
 
     if (!Array.isArray(body.answers) || body.answers.length === 0) {
@@ -262,8 +287,41 @@ export async function POST(request) {
       throw error;
     }
 
+    // AI help stays locked until a formal exam session is linked to the saved
+    // result. If completion fails, the result is still preserved but the
+    // client is told not to unlock AI yet.
+    let examSessionCompleted = true;
+
+    if (examMode === EXAM_MODE_MOCK) {
+      examSessionCompleted = false;
+
+      if (examSessionId) {
+        const completion = await completeActiveExamSession(supabase, {
+          userId: user.id,
+          sessionId: examSessionId,
+          resultId: data.id,
+          examType,
+          year,
+          subjects: selectedSubjects,
+        });
+
+        examSessionCompleted = completion.ok;
+
+        if (!completion.ok) {
+          console.error(
+            "Exam session completion failed:",
+            completion.reason ?? "unknown"
+          );
+        }
+      }
+    }
+
     return NextResponse.json(
-      { success: true, result: serializeResult(data) },
+      {
+        success: true,
+        result: serializeResult(data),
+        examSessionCompleted,
+      },
       { status: 201 }
     );
   } catch (error) {

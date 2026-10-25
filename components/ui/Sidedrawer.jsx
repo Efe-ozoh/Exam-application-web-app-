@@ -7,6 +7,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 import InfoOutlineIcon from "@mui/icons-material/InfoOutline";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import CloseIcon from "@mui/icons-material/Close";
 
 import ThemeToggle from "./ThemeToggle";
@@ -71,6 +72,13 @@ const Sidedrawer = ({ open, user, isLoading, onClose }) => {
               className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition"
             >
               <MenuBookOutlinedIcon /> Practice
+            </Link>
+            <Link
+              href="/study-assistant"
+              onClick={handleNavigate}
+              className="flex items-center font-bold gap-3 p-3 rounded-xl hover:bg-[#E8E6FF] transition"
+            >
+              <AutoAwesomeIcon /> AI Study Assistant
             </Link>
             <Link
               href="/past_questions"

@@ -69,3 +69,12 @@ export function AlertIcon() {
     </svg>
   );
 }
+
+export function SparklesIcon() {
+  return (
+    <svg {...iconProps} className="h-5 w-5">
+      <path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" />
+      <path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z" />
+    </svg>
+  );
+}
