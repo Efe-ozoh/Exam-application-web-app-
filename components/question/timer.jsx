@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-const Timer = ({ onTimeUp }) => {
+const Timer = ({ onTimeUp, examType: examTypeProp = "" }) => {
 
   const searchParams = useSearchParams();
 
-  const examType = searchParams.get("examType");
+  const examType = String(
+    examTypeProp || searchParams.get("examType") || "",
+  )
+    .trim()
+    .toUpperCase();
 
   const EXAM_TIMES = {
     JAMB: 120 * 60,

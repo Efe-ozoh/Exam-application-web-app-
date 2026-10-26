@@ -37,7 +37,13 @@ const QuestionState = ({ title, message, role, children }) => (
   </div>
 );
 
-const QuestionClient = ({ examMode, examSessionId, examStartError }) => {
+const QuestionClient = ({
+  examMode,
+  examSessionId,
+  activeExamSession = null,
+  aiLockedByActiveExam = false,
+  examStartError,
+}) => {
   const {
     // actions
     handleSelect,
@@ -62,7 +68,10 @@ const QuestionClient = ({ examMode, examSessionId, examStartError }) => {
     isFormalExam,
     isResultSaved,
 
-  } = useQuestion({ examMode, examSessionId });
+  } = useQuestion({ examMode, examSessionId, activeExamSession });
+
+  const aiLocked =
+    aiLockedByActiveExam || (isFormalExam && !isResultSaved);
 
   if (examStartError) {
     return (
@@ -117,6 +126,16 @@ const QuestionClient = ({ examMode, examSessionId, examStartError }) => {
   return (
    
     <div className="min-h-screen bg-gray-50 px-4 py-10">
+      {activeExamSession ? (
+        <p
+          role="status"
+          className="mx-auto mb-4 max-w-4xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900"
+        >
+          You have an examination in progress. Your active examination has
+          been resumed.
+        </p>
+      ) : null}
+
       {/* HEADER */}
       <Header currentQuestion={currentQuestion} />
 
@@ -125,9 +144,11 @@ const QuestionClient = ({ examMode, examSessionId, examStartError }) => {
        {/* Calculator */}
        <div className="flex items-center">
          <CalculatorToggle />
-         {isFormalExam && !isResultSaved ? (
+         {aiLocked ? (
            <span className="ml-4 text-xs font-medium text-slate-500 sm:ml-8">
-             AI help unlocks after a successful submission
+             {isFormalExam && !isResultSaved
+               ? "AI help unlocks after a successful submission"
+               : "AI help is locked while your examination is in progress"}
            </span>
          ) : (
            <AskAi
@@ -137,11 +158,16 @@ const QuestionClient = ({ examMode, examSessionId, examStartError }) => {
          )}
        </div>
 
-        {/* Timer */}
-      <Suspense fallback={ <QuestionPageSkeleton /> }>
-        <Timer onTimeUp={displayScoreModal} />
-     
-       </Suspense>
+        {/* Timer (formal exams only, stops after submission) */}
+      {isFormalExam && !result ? (
+        <Suspense fallback={ <QuestionPageSkeleton /> }>
+          <Timer
+            onTimeUp={displayScoreModal}
+            examType={activeExamSession?.examType}
+          />
+       
+         </Suspense>
+      ) : null}
 
      </div>
 

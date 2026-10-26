@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import connectDB from "@/lib/mongoose";
 import Question from "@/lib/models/question.schema.jsx";
 import { EXAM_MODE_MOCK, normalizeExamMode } from "@/lib/exam/constants";
@@ -59,9 +60,20 @@ function badRequest(message) {
   );
 }
 
+function serverWriteUnavailable() {
+  return NextResponse.json(
+    {
+      success: false,
+      message:
+        "Result saving is temporarily unavailable. Please try again shortly.",
+    },
+    { status: 503 }
+  );
+}
+
 export async function POST(request) {
   try {
-    const { supabase, user } = await getCurrentUser();
+    const { user } = await getCurrentUser();
 
     if (!user) {
       return NextResponse.json(
@@ -253,6 +265,29 @@ export async function POST(request) {
       orderedAnswers.push(answer);
     }
 
+    // A formal exam is only complete when the saved attempt covers every
+    // question in the selected paper. Without this, a direct API call could
+    // submit one answer, close the session, and unlock AI during an exam.
+    if (examMode === EXAM_MODE_MOCK && examSessionId) {
+      const paperQuestions = await Question.find({
+        exam: examType,
+        year,
+        subject: { $in: selectedSubjects },
+      })
+        .select({ _id: 1 })
+        .lean();
+
+      const missingQuestion = paperQuestions.some(
+        (question) => !submittedIds.has(String(question._id).toLowerCase())
+      );
+
+      if (missingQuestion) {
+        return badRequest(
+          "This examination submission is incomplete. Reload the examination and submit every question."
+        );
+      }
+    }
+
     const result = calculateScore(orderedAnswers, orderedQuestions);
     const subjectScores = normalizeSubjectScores(result.subjectScores);
     const correctCount = result.breakdown.filter(
@@ -263,7 +298,19 @@ export async function POST(request) {
       ? subjectScores.map((subject) => subject.subject)
       : selectedSubjects;
 
-    const { data, error } = await supabase
+    // Results and exam-session completion are server-only writes. The
+    // service-role client bypasses RLS, so user_id and every value below have
+    // already been derived from the authenticated user or trusted server data.
+    let admin;
+
+    try {
+      admin = getSupabaseAdminClient();
+    } catch (error) {
+      console.error("Supabase admin client unavailable:", error);
+      return serverWriteUnavailable();
+    }
+
+    const { data, error } = await admin
       .from(TABLE)
       .insert({
         user_id: user.id,
@@ -296,7 +343,7 @@ export async function POST(request) {
       examSessionCompleted = false;
 
       if (examSessionId) {
-        const completion = await completeActiveExamSession(supabase, {
+        const completion = await completeActiveExamSession(admin, {
           userId: user.id,
           sessionId: examSessionId,
           resultId: data.id,

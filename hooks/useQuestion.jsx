@@ -7,16 +7,41 @@ import { isFormalExamMode } from "@/lib/exam/constants";
 import { createClient } from "@/lib/supabase/client";
 import { calculateScore } from "@/utils/scoreCalculator";
 
-const useQuestion = ({ examMode = "", examSessionId = null } = {}) => {
+const useQuestion = ({
+  examMode = "",
+  examSessionId = null,
+  activeExamSession = null,
+} = {}) => {
   const searchParams = useSearchParams();
+  const hasSessionParams = Boolean(activeExamSession);
 
-  const examType = searchParams?.get("examType") ?? "";
-  const year = searchParams?.get("year") ?? "";
+  // The active formal exam is authoritative. If a student opens a different
+  // paper while one is in progress, the page resumes the stored session.
+  const rawExamType = hasSessionParams
+    ? typeof activeExamSession.examType === "string"
+      ? activeExamSession.examType
+      : ""
+    : searchParams?.get("examType") ?? "";
+  const examType = rawExamType.trim().toUpperCase();
+
+  const sessionYear = activeExamSession?.year;
+  const year = hasSessionParams
+    ? sessionYear === null || sessionYear === undefined || sessionYear === ""
+      ? ""
+      : String(sessionYear)
+    : searchParams?.get("year") ?? "";
+
   const subjectsParam = searchParams?.get("subjects") ?? "";
 
   // ExamOption sends the subjects as a JSON array. Older links used a
   // comma-separated list, so fall back to that for backwards compatibility.
   const subjects = (() => {
+    if (hasSessionParams && Array.isArray(activeExamSession.subjects)) {
+      return activeExamSession.subjects.filter(
+        (subject) => typeof subject === "string",
+      );
+    }
+
     if (!subjectsParam) return [];
 
     try {
@@ -28,6 +53,8 @@ const useQuestion = ({ examMode = "", examSessionId = null } = {}) => {
       return subjectsParam.split(",").filter(Boolean);
     }
   })();
+
+  const subjectsKey = JSON.stringify(subjects);
 
   const [questions, setQuestions] = useState([]);
   const [index, setIndex] = useState(0);
@@ -92,7 +119,7 @@ const useQuestion = ({ examMode = "", examSessionId = null } = {}) => {
     return () => {
       isActive = false;
     };
-  }, [examType, year, subjectsParam, reloadKey]);
+  }, [examType, year, subjectsKey, reloadKey, examSessionId]);
 
   const reloadQuestions = () => setReloadKey((key) => key + 1);
 
@@ -105,8 +132,7 @@ const useQuestion = ({ examMode = "", examSessionId = null } = {}) => {
     setResult(null);
     setSaveError(null);
     setIsResultSaved(false);
-  }, [examType, year, subjectsParam]);
-  
+  }, [examType, year, subjectsKey, examSessionId]);
 
   const handleSelect = (option) => {
     setAnswers((prev) => ({ ...prev, [index]: option }));

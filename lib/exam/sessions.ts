@@ -160,8 +160,16 @@ export async function getActiveExamSession(
   return { ok: true, session };
 }
 
+/**
+ * Creates a formal examination session using the server-only writer.
+ *
+ * Reads use the caller's authenticated client so RLS continues to apply.
+ * Writes use the service-role client because authenticated users are not
+ * allowed to insert or modify exam_sessions directly.
+ */
 export async function createActiveExamSession(
-  supabase: SupabaseClient,
+  reader: SupabaseClient,
+  writer: SupabaseClient,
   input: {
     userId: string;
     examType: string;
@@ -170,12 +178,12 @@ export async function createActiveExamSession(
     mode?: ExamMode;
   },
 ): Promise<SessionResult> {
-  const existing = await getActiveExamSession(supabase, input.userId);
+  const existing = await getActiveExamSession(reader, input.userId);
 
   if (!existing.ok) return existing;
   if (existing.session) return existing;
 
-  const { data, error } = await supabase
+  const { data, error } = await writer
     .from(EXAM_SESSION_TABLE)
     .insert({
       user_id: input.userId,
@@ -193,7 +201,7 @@ export async function createActiveExamSession(
   if (error) {
     // A second tab may have created the session between the SELECT and INSERT.
     if (errorCode(error) === UNIQUE_VIOLATION_CODE) {
-      const retry = await getActiveExamSession(supabase, input.userId);
+      const retry = await getActiveExamSession(reader, input.userId);
 
       if (retry.ok && retry.session) return retry;
     }
@@ -218,8 +226,15 @@ export async function createActiveExamSession(
   return { ok: true, session };
 }
 
+/**
+ * Completes a formal examination session after a result has been persisted.
+ *
+ * Only trusted server code should call this with the service-role client.
+ * Ownership and exam details are still checked explicitly because the writer
+ * bypasses RLS.
+ */
 export async function completeActiveExamSession(
-  supabase: SupabaseClient,
+  writer: SupabaseClient,
   input: {
     userId: string;
     sessionId: string;
@@ -229,7 +244,7 @@ export async function completeActiveExamSession(
     subjects: string[];
   },
 ): Promise<{ ok: boolean; reason?: string }> {
-  const { data, error } = await supabase
+  const { data, error } = await writer
     .from(EXAM_SESSION_TABLE)
     .select(
       "id, user_id, exam_type, year, subjects, mode, status, started_at, submitted_at, practice_result_id",
@@ -251,31 +266,41 @@ export async function completeActiveExamSession(
 
   if (!session) return { ok: false, reason: "not_found" };
 
+  const matchesExam =
+    session.examType.trim().toUpperCase() ===
+      String(input.examType ?? "").trim().toUpperCase() &&
+    session.year === input.year &&
+    sameSubjectSet(session.subjects, input.subjects);
+
   if (session.status === EXAM_SESSION_STATUS_SUBMITTED) {
-    return { ok: true };
+    // A previously submitted exam must not be mistaken for the current
+    // attempt. Only an idempotent retry for the same paper is successful.
+    return matchesExam
+      ? { ok: true }
+      : { ok: false, reason: "already_submitted" };
   }
 
   if (session.status !== EXAM_SESSION_STATUS_ACTIVE) {
     return { ok: false, reason: "not_active" };
   }
 
-  if (
-    session.examType.trim().toUpperCase() !==
-    String(input.examType ?? "").trim().toUpperCase()
-  ) {
-    return { ok: false, reason: "exam_mismatch" };
-  }
+  if (!matchesExam) {
+    if (
+      session.examType.trim().toUpperCase() !==
+      String(input.examType ?? "").trim().toUpperCase()
+    ) {
+      return { ok: false, reason: "exam_mismatch" };
+    }
 
-  if (session.year !== input.year) {
-    return { ok: false, reason: "year_mismatch" };
-  }
+    if (session.year !== input.year) {
+      return { ok: false, reason: "year_mismatch" };
+    }
 
-  if (!sameSubjectSet(session.subjects, input.subjects)) {
     return { ok: false, reason: "subjects_mismatch" };
   }
 
   const now = new Date().toISOString();
-  const { data: updated, error: updateError } = await supabase
+  const { data: updated, error: updateError } = await writer
     .from(EXAM_SESSION_TABLE)
     .update({
       status: EXAM_SESSION_STATUS_SUBMITTED,
