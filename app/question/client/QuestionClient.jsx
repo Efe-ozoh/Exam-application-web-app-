@@ -70,8 +70,9 @@ const QuestionClient = ({
 
   } = useQuestion({ examMode, examSessionId, activeExamSession });
 
-  const aiLocked =
-    aiLockedByActiveExam || (isFormalExam && !isResultSaved);
+  const aiLocked = isFormalExam
+    ? !isResultSaved
+    : aiLockedByActiveExam;
 
   if (examStartError) {
     return (
@@ -137,7 +138,7 @@ const QuestionClient = ({
         </p>
       ) : null}
 
-      {activeExamSession ? (
+      {activeExamSession && !isResultSaved ? (
         <p
           role="status"
           className="mx-auto mb-4 max-w-4xl rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900"
