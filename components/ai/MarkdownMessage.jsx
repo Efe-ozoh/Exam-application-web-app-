@@ -3,191 +3,60 @@
 import { Fragment, useMemo } from "react";
 import { MathJax } from "better-react-mathjax";
 
-const INLINE_PATTERN =
-  /(\*\*[^*\n]+\*\*|__[^_\n]+__|`[^`\n]+`|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|\$\$[\s\S]*?\$\$|\*[^*\n]+\*)/g;
+import {
+  parseMarkdownBlocks,
+  tokenizeInline,
+} from "@/lib/ai/markdown.mjs";
 
 function renderInline(text, keyPrefix) {
-  return text.split(INLINE_PATTERN).map((part, index) => {
-    if (!part) return null;
-
+  return tokenizeInline(text).map((token, index) => {
     const key = `${keyPrefix}-${index}`;
 
-    if (
-      (part.startsWith("**") && part.endsWith("**")) ||
-      (part.startsWith("__") && part.endsWith("__"))
-    ) {
+    if (token.type === "bold") {
       return (
         <strong key={key}>
-          {renderInline(part.slice(2, -2), `${key}-strong`)}
+          {renderInline(token.value, `${key}-strong`)}
         </strong>
       );
     }
 
-    if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
+    if (token.type === "italic") {
       return (
         <em key={key}>
-          {renderInline(part.slice(1, -1), `${key}-em`)}
+          {renderInline(token.value, `${key}-em`)}
         </em>
       );
     }
 
-    if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
+    if (token.type === "code") {
       return (
         <code
           key={key}
           className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.9em] text-slate-800"
         >
-          {part.slice(1, -1)}
+          {token.value}
         </code>
       );
     }
 
-    if (
-      (part.startsWith("\\(") && part.endsWith("\\)")) ||
-      (part.startsWith("\\[") && part.endsWith("\\]")) ||
-      (part.startsWith("$$") && part.endsWith("$$"))
-    ) {
-      return (
+    if (token.type === "math") {
+      const tex = token.display
+        ? `$$${token.value}$$`
+        : `\\(${token.value}\\)`;
+
+      return token.display ? (
+        <MathJax key={key} dynamic>
+          {tex}
+        </MathJax>
+      ) : (
         <MathJax key={key} inline dynamic>
-          {part}
+          {tex}
         </MathJax>
       );
     }
 
-    return <Fragment key={key}>{part}</Fragment>;
+    return <Fragment key={key}>{token.value}</Fragment>;
   });
-}
-
-function startsBlock(line) {
-  const trimmed = line.trim();
-
-  return (
-    /^#{1,4}\s+/.test(trimmed) ||
-    /^[-*+]\s+/.test(trimmed) ||
-    /^\d+[.)]\s+/.test(trimmed) ||
-    /^>\s?/.test(trimmed) ||
-    /^```/.test(trimmed) ||
-    trimmed.startsWith("$$")
-  );
-}
-
-function parseBlocks(text) {
-  const lines = String(text ?? "")
-    .replace(/\r\n?/g, "\n")
-    .split("\n");
-  const blocks = [];
-  let index = 0;
-
-  while (index < lines.length) {
-    const line = lines[index];
-    const trimmed = line.trim();
-
-    if (!trimmed) {
-      index += 1;
-      continue;
-    }
-
-    if (trimmed.startsWith("```")) {
-      const code = [];
-      index += 1;
-
-      while (
-        index < lines.length &&
-        !lines[index].trim().startsWith("```")
-      ) {
-        code.push(lines[index]);
-        index += 1;
-      }
-
-      index += 1;
-      blocks.push({ type: "code", content: code.join("\n") });
-      continue;
-    }
-
-    if (trimmed.startsWith("$$")) {
-      const math = [trimmed];
-      const closesOnSameLine = trimmed.length > 2 && trimmed.endsWith("$$");
-
-      index += 1;
-
-      if (!closesOnSameLine) {
-        while (index < lines.length) {
-          const mathLine = lines[index].trim();
-          math.push(mathLine);
-          index += 1;
-
-          if (mathLine.endsWith("$$")) break;
-        }
-      }
-
-      blocks.push({ type: "math", content: math.join("\n") });
-      continue;
-    }
-
-    const heading = trimmed.match(/^(#{1,4})\s+(.*)$/);
-
-    if (heading) {
-      blocks.push({
-        type: "heading",
-        level: heading[1].length,
-        content: heading[2],
-      });
-      index += 1;
-      continue;
-    }
-
-    if (/^>\s?/.test(trimmed)) {
-      const quote = [];
-
-      while (index < lines.length && /^>\s?/.test(lines[index].trim())) {
-        quote.push(lines[index].trim().replace(/^>\s?/, ""));
-        index += 1;
-      }
-
-      blocks.push({ type: "quote", content: quote.join(" ") });
-      continue;
-    }
-
-    if (/^[-*+]\s+/.test(trimmed)) {
-      const items = [];
-
-      while (index < lines.length && /^[-*+]\s+/.test(lines[index].trim())) {
-        items.push(lines[index].trim().replace(/^[-*+]\s+/, ""));
-        index += 1;
-      }
-
-      blocks.push({ type: "ul", items });
-      continue;
-    }
-
-    if (/^\d+[.)]\s+/.test(trimmed)) {
-      const items = [];
-
-      while (index < lines.length && /^\d+[.)]\s+/.test(lines[index].trim())) {
-        items.push(lines[index].trim().replace(/^\d+[.)]\s+/, ""));
-        index += 1;
-      }
-
-      blocks.push({ type: "ol", items });
-      continue;
-    }
-
-    const paragraph = [trimmed];
-    index += 1;
-
-    while (
-      index < lines.length &&
-      lines[index].trim() &&
-      !startsBlock(lines[index])
-    ) {
-      paragraph.push(lines[index].trim());
-      index += 1;
-    }
-
-    blocks.push({ type: "paragraph", content: paragraph.join(" ") });
-  }
-
-  return blocks;
 }
 
 const headingClasses = {
@@ -198,7 +67,7 @@ const headingClasses = {
 };
 
 export default function MarkdownMessage({ content }) {
-  const blocks = useMemo(() => parseBlocks(content), [content]);
+  const blocks = useMemo(() => parseMarkdownBlocks(content), [content]);
 
   if (blocks.length === 0) return null;
 
@@ -211,7 +80,7 @@ export default function MarkdownMessage({ content }) {
               key={index}
               className="overflow-x-auto rounded-lg bg-white/70 px-3 py-2 text-slate-800"
             >
-              <MathJax dynamic>{block.content}</MathJax>
+              <MathJax dynamic>{`$$${block.content}$$`}</MathJax>
             </div>
           );
         }

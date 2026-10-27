@@ -236,17 +236,9 @@ export default function StudyAssistant() {
       <div className="mx-auto w-full max-w-4xl">
         <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
-              Eduliver AI
-            </p>
             <h1 className="mt-1 text-3xl font-bold leading-tight text-slate-900 sm:text-4xl">
               AI Study Assistant
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-              Ask about Mathematics, English, Sciences, Social Sciences,
-              Literature, or study techniques. Your tutor explains each step
-              instead of only giving an answer.
-            </p>
           </div>
 
           <button
@@ -262,13 +254,6 @@ export default function StudyAssistant() {
         </header>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-start">
-          <div className="rounded-xl border border-blue-100 bg-white/70 px-4 py-3 text-xs text-slate-600 sm:order-2 sm:max-w-[220px]">
-            <p className="font-semibold text-slate-800">How to get the best help</p>
-            <p className="mt-1">
-              Share what you have tried so far. Your tutor can then explain the
-              exact step where you got stuck.
-            </p>
-          </div>
           <div className="sm:order-1">
             <UsageIndicator
               usage={usage}

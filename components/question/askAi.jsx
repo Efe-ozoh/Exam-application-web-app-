@@ -279,13 +279,10 @@ export default function AskAi({ question, selectedAnswer }) {
         type="button"
         ref={triggerRef}
         onClick={handleOpen}
-        className="ml-4 flex items-center gap-1 text-gray-700 transition hover:text-blue-600 sm:ml-8"
+        className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
       >
         <AutoAwesomeIcon className="text-blue-700" />
-        <span className="hidden text-xl font-bold text-blue-700 sm:inline">
-          Ask AI
-        </span>
-        <span className="sr-only sm:hidden">Ask AI about this question</span>
+        <span>Ask AI</span>
       </button>
 
       {open ? (

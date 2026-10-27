@@ -156,12 +156,6 @@ const QuestionClient = ({
        {/* Calculator */}
        <div className="flex items-center">
          <CalculatorToggle />
-         {!aiLocked ? (
-           <AskAi
-             question={currentQuestion}
-             selectedAnswer={answers[index]}
-           />
-         ) : null}
        </div>
 
         {/* Timer (formal exams only, stops after submission) */}
@@ -193,6 +187,15 @@ const QuestionClient = ({
 
         {/* SOLUTION (shows after submit) */}
         <Solution  result={result} index={index} />
+
+        {!aiLocked ? (
+          <div className="mt-6 flex">
+            <AskAi
+              question={currentQuestion}
+              selectedAnswer={answers[index]}
+            />
+          </div>
+        ) : null}
 
         {/* NAV BUTTONS */}
         <div className="flex justify-between mt-12">

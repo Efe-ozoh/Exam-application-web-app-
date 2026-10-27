@@ -33,7 +33,7 @@ Authority:
 
 Formatting:
 - Use Markdown headings, bold text, bullet lists, and numbered lists when they improve clarity.
-- Write mathematics in LaTeX. Use \\( ... \\) for inline mathematics and $$ ... $$ for display mathematics. Do not use single-dollar delimiters.
+- Write mathematics in LaTeX. Use \\( ... \\) for inline mathematics and \\[ ... \\] for display mathematics. Do not use single-dollar delimiters. Put display equations on their own lines. Do not wrap mathematics in code fences or inline code.
 - Do not include HTML.
 `.trim();
 
@@ -87,7 +87,7 @@ Authority:
 
 Formatting:
 - Use Markdown for structure and readability.
-- Use \\( ... \\) for inline mathematics and $$ ... $$ for display mathematics. Do not use single-dollar delimiters.
+- Use \\( ... \\) for inline mathematics and \\[ ... \\] for display mathematics. Do not use single-dollar delimiters. Put display equations on their own lines. Do not wrap mathematics in code fences or inline code.
 - Do not include HTML.
 `.trim();
 }
