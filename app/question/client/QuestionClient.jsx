@@ -126,6 +126,17 @@ const QuestionClient = ({
   return (
    
     <div className="min-h-screen bg-gray-50 px-4 py-10">
+      {aiLocked ? (
+        <p
+          role="status"
+          className="mx-auto mb-4 max-w-4xl rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600"
+        >
+          {isFormalExam && !isResultSaved
+            ? "AI help unlocks after a successful submission"
+            : "AI help is locked while your examination is in progress"}
+        </p>
+      ) : null}
+
       {activeExamSession ? (
         <p
           role="status"
@@ -144,18 +155,12 @@ const QuestionClient = ({
        {/* Calculator */}
        <div className="flex items-center">
          <CalculatorToggle />
-         {aiLocked ? (
-           <span className="ml-4 text-xs font-medium text-slate-500 sm:ml-8">
-             {isFormalExam && !isResultSaved
-               ? "AI help unlocks after a successful submission"
-               : "AI help is locked while your examination is in progress"}
-           </span>
-         ) : (
+         {!aiLocked ? (
            <AskAi
              question={currentQuestion}
              selectedAnswer={answers[index]}
            />
-         )}
+         ) : null}
        </div>
 
         {/* Timer (formal exams only, stops after submission) */}
