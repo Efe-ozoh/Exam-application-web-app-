@@ -218,3 +218,51 @@ html.dark .MuiCardMedia-root {
 html.dark .MuiSkeleton-root {
   background-color: #1c2f4a;
 }
+
+/* All-time JAMB leaderboard ticker */
+.leaderboard-viewport {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 16px,
+    #000 calc(100% - 16px),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 16px,
+    #000 calc(100% - 16px),
+    transparent
+  );
+}
+
+@keyframes leaderboard-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.leaderboard-track {
+  display: flex;
+  width: max-content;
+  animation: leaderboard-marquee 28s linear infinite;
+  will-change: transform;
+}
+
+.leaderboard-track--paused {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaderboard-track {
+    animation: none;
+  }
+
+  .leaderboard-pause {
+    display: none;
+  }
+}

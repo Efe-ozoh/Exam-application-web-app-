@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AllTimeLeaderboardBanner from "@/components/leaderboard/AllTimeLeaderboardBanner";
 import Sidebar from "@/components/ui/Sidebar";
 import 'antd/dist/reset.css';
 import './globals.css';
@@ -42,6 +43,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased transition-colors duration-200">
         <MathJaxContext config={config}>
+          <AllTimeLeaderboardBanner />
           <Sidebar />
 
           <div className="w-full">{children}</div>

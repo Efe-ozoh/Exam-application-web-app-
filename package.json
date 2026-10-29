@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test tests/markdown.test.mjs"
+    "test": "node --test tests/markdown.test.mjs tests/leaderboard.test.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

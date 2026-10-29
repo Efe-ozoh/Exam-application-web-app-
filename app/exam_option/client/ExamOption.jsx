@@ -11,6 +11,7 @@ import ExamTypeChips from "@/components/examOption/ExamTypeChips";
 import ExamMode from "@/components/examOption/ExamMode";
 import {
   EXAM_MODE_PRACTICE,
+  EXAM_MODE_MOCK,
   isFormalExamMode,
 } from "@/lib/exam/constants";
 import {
@@ -28,7 +29,7 @@ const ExamOptions = () => {
 
   const router = useRouter();
 
-  const [examMode, setExamMode] = useState(EXAM_MODE_PRACTICE);
+  const [examMode, setExamMode] = useState(EXAM_MODE_MOCK);
   const [examType, setExamType] = useState("JAMB");
   const [year, setYear] = useState(2024);
   const [selected, setSelected] = useState([JAMB_COMPULSORY_SUBJECT]);
@@ -94,7 +95,7 @@ const ExamOptions = () => {
     setSelected([JAMB_COMPULSORY_SUBJECT]);
     setExamType("JAMB");
     setYear(2024);
-    setExamMode(EXAM_MODE_PRACTICE);
+    setExamMode(EXAM_MODE_MOCK);
     setFormError("");
   }
 
